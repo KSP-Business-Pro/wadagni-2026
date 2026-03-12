@@ -267,12 +267,13 @@ textarea.inp{resize:none;height:62px;line-height:1.5;}
           <div class="niv-grid" id="m-niv"></div>
           <div id="m-niv-hint" style="font-size:10px;color:var(--gold);background:rgba(201,168,76,.07);border-radius:7px;padding:7px 10px;margin-bottom:8px;line-height:1.6;"></div>
           <div id="m-loc-sec" style="display:none">
-            <span class="flbl">LOCALITÉ</span>
-            <select class="inp" id="m-dp" onchange="updCommunes('m-dp','m-cm')">
+            <span class="flbl" id="m-loc-lbl">LOCALITÉ</span>
+            <select class="inp" id="m-dp" onchange="updCommunes('m-dp','m-cm');">
               <option value="">Département *</option>
               <option>Alibori</option><option>Atacora</option><option>Atlantique</option><option>Borgou</option><option>Collines</option><option>Couffo</option><option>Donga</option><option>Littoral</option><option>Mono</option><option>Ouémé</option><option>Plateau</option><option>Zou</option>
             </select>
-            <select class="inp" id="m-cm"><option value="">Commune * (choisir département d'abord)</option></select>
+            <select class="inp" id="m-cm"><option value="">Commune à charge * (choisir département d'abord)</option></select>
+            <div id="m-cm-hint" style="font-size:10px;color:var(--gray);margin-top:-4px;margin-bottom:6px;"></div>
           </div>
           <div id="m-ar-sec" style="display:none">
             <span class="flbl">ARRONDISSEMENT</span>
@@ -609,12 +610,16 @@ var selMN='N3',selAN='N3';
 function buildNS(cid,sel,key,allowed){var c=document.getElementById(cid);if(!c)return;var list=allowed?NIVS.filter(function(n){return allowed.indexOf(n.id)>=0;}):NIVS;c.innerHTML=list.map(function(n){var a=sel===n.id;return'<div class="niv-opt" id="'+cid+'-'+n.id+'" onclick="pickN(\''+cid+'\',\''+n.id+'\',\''+key+'\')" style="border-color:'+(a?n.col:n.c2+'0.18)')+';background:'+(a?n.c2+'0.12)':'transparent')+'"><div style="font-size:16px;">'+n.ico+'</div><div style="font-size:9px;color:'+(a?n.col:'#7A7A7A')+';margin-top:2px;font-weight:'+(a?700:400)+';">'+n.lbl+'</div></div>';}).join('');}
 function updMFields(){
   var cfg={
-    N1:{loc:false,ar:false,vl:false,hint:'⭐ Coordination Nationale — Champs requis : Prénom, Nom, Téléphone'},
+    N1:{loc:true,ar:false,vl:false,hint:'⭐ Coordination Nationale — Champs requis : Prénom, Nom, Téléphone, Département, Commune à charge'},
     N3:{loc:true,ar:true,vl:false,hint:'📍 Point Focal — Champs requis : Prénom, Nom, Téléphone, Département, Commune, Arrondissement'}
   }[selMN]||{loc:true,ar:false,vl:false,hint:''};
   var nh=document.getElementById('m-niv-hint');if(nh)nh.textContent=cfg.hint;
   var ls=document.getElementById('m-loc-sec');if(ls)ls.style.display=cfg.loc?'':'none';
   var as=document.getElementById('m-ar-sec');if(as)as.style.display=cfg.ar?'':'none';
+  /* Label dynamique selon niveau */
+  var ll=document.getElementById('m-loc-lbl');if(ll)ll.textContent=selMN==='N1'?'COMMUNE À CHARGE':'LOCALITÉ';
+  var ch=document.getElementById('m-cm-hint');if(ch)ch.textContent=selMN==='N1'?'Commune dont ce coordonnateur a la responsabilité':'';
+  var cm=document.getElementById('m-cm');if(cm&&cm.options[0])cm.options[0].text=selMN==='N1'?'Commune à charge * (choisir département d\'abord)':'Commune * (choisir département d\'abord)';
   var vs=document.getElementById('m-vl-sec');if(vs)vs.style.display=cfg.vl?'':'none';
   if(!cfg.loc){sv('m-dp','');sv('m-cm','');}
   if(!cfg.ar)sv('m-ar','');
@@ -652,10 +657,10 @@ function rMem(){
   var el=document.getElementById('mem-list');if(!el)return;
   if(!lst.length){el.innerHTML='<div class="empty"><div class="empty-i">👥</div><div class="empty-t">Aucun membre dans votre périmètre</div></div>';return;}
   var shown=lst.slice(0,100);
-  el.innerHTML=shown.map(function(m){var n=gn(m.niv);return'<div class="card" style="border:1px solid '+n.col+'28;display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;" onclick="showMD(\''+m.id+'\')"><div style="width:37px;height:37px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">'+n.ico+'</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:9px;color:'+n.col+';margin-top:1px;">'+n.lbl+(m.tl?' · 📞 '+esc(m.tl):'')+'</div><div style="font-size:10px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(m.cm)+(m.dp?', '+esc(m.dp):'')+(m.vl?' · '+esc(m.vl):'')+'</div></div><span style="color:var(--gray);font-size:15px;">›</span></div>';}).join('');
+  el.innerHTML=shown.map(function(m){var n=gn(m.niv);return'<div class="card" style="border:1px solid '+n.col+'28;display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;" onclick="showMD(\''+m.id+'\')"><div style="width:37px;height:37px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">'+n.ico+'</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:9px;color:'+n.col+';margin-top:1px;">'+n.lbl+(m.tl?' · 📞 '+esc(m.tl):'')+'</div><div style="font-size:10px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(m.niv==='N1'&&m.cm?'📍 '+esc(m.cm)+(m.dp?', '+esc(m.dp):''):esc(m.cm)+(m.dp?', '+esc(m.dp):'')+(m.vl?' · '+esc(m.vl):''))+'</div></div><span style="color:var(--gray);font-size:15px;">›</span></div>';}).join('');
   if(lst.length>100)el.innerHTML+='<div style="text-align:center;padding:8px;font-size:11px;color:var(--gray);">+'+(lst.length-100)+' · Affinez la recherche</div>';
 }
-function showMD(id){var m=DATA.membres.filter(function(x){return x.id===id;})[0];if(!m)return;var n=gn(m.niv);var codeRow=m.cd?[['🔑 Code connexion',m.cd]]:[];var rows=[['Département',m.dp],['Commune',m.cm],['Arrondissement',m.ar],['Village/Quartier',m.vl],['Téléphone',m.tl]].concat(codeRow).concat([['Observations',m.ob],['Enregistré le',fd(m.ts)]]);var editBtn=SES&&SES.niv==='ADM'?'<button class="btn-gold" style="margin-bottom:6px;" onclick="editMem(\''+id+'\')">✏️ Modifier ce membre</button>':'';document.getElementById('mem-det').innerHTML='<div class="card" style="border:1px solid '+n.col+'44;"><div style="display:flex;align-items:center;gap:11px;margin-bottom:11px;"><div style="width:48px;height:48px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:20px;">'+n.ico+'</div><div><div style="font-size:15px;font-weight:900;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:11px;color:'+n.col+';margin-top:2px;">'+n.lbl+'</div></div></div>'+rows.map(function(r){return'<div class="det-row"><span style="font-size:11px;color:var(--gray);">'+r[0]+'</span><span style="font-size:11px;color:var(--cream);font-weight:600;text-align:right;max-width:60%;">'+esc(r[1]||'—')+'</span></div>';}).join('')+'</div>'+editBtn+'<button class="btn-red" onclick="delMem(\''+id+'\')">🗑 Supprimer ce membre</button>';openView('v-md');}
+function showMD(id){var m=DATA.membres.filter(function(x){return x.id===id;})[0];if(!m)return;var n=gn(m.niv);var codeRow=m.cd?[['🔑 Code connexion',m.cd]]:[];var cmLbl=m.niv==='N1'?'Commune à charge':'Commune';var rows=[['Département',m.dp],[cmLbl,m.cm],['Arrondissement',m.ar],['Village/Quartier',m.vl],['Téléphone',m.tl]].concat(codeRow).concat([['Observations',m.ob],['Enregistré le',fd(m.ts)]]);var editBtn=SES&&SES.niv==='ADM'?'<button class="btn-gold" style="margin-bottom:6px;" onclick="editMem(\''+id+'\')">✏️ Modifier ce membre</button>':'';document.getElementById('mem-det').innerHTML='<div class="card" style="border:1px solid '+n.col+'44;"><div style="display:flex;align-items:center;gap:11px;margin-bottom:11px;"><div style="width:48px;height:48px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:20px;">'+n.ico+'</div><div><div style="font-size:15px;font-weight:900;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:11px;color:'+n.col+';margin-top:2px;">'+n.lbl+'</div></div></div>'+rows.map(function(r){return'<div class="det-row"><span style="font-size:11px;color:var(--gray);">'+r[0]+'</span><span style="font-size:11px;color:var(--cream);font-weight:600;text-align:right;max-width:60%;">'+esc(r[1]||'—')+'</span></div>';}).join('')+'</div>'+editBtn+'<button class="btn-red" onclick="delMem(\''+id+'\')">🗑 Supprimer ce membre</button>';openView('v-md');}
 function delMem(id){if(!confirm('Supprimer ce membre ?'))return;DATA.membres=DATA.membres.filter(function(m){return m.id!==id;});saveM();openView('v-ml');rMem();renderDash();updDL();toast('Supprimé','#555');}
 function initMF(){
   ['m-pn','m-nm','m-tl','m-ar','m-vl','m-ob'].forEach(function(id){sv(id,'');});
@@ -678,8 +683,8 @@ function saveMem(){
   var acc=getAccess();
   if(acc.nivs.indexOf(selMN)<0){toast('Vous ne pouvez pas enregistrer ce niveau','#E74C3C');return;}
   var pn=v('m-pn').trim(),nm=v('m-nm').trim(),tl=v('m-tl').trim(),dp=v('m-dp'),cm=v('m-cm').trim(),ar=v('m-ar').trim(),vl=v('m-vl').trim();
-  var ok={N1:pn&&nm&&tl,N3:pn&&nm&&tl&&dp&&cm&&ar}[selMN];
-  var msg={N1:'Requis : Prénom, Nom, Téléphone',N3:'Requis : Prénom, Nom, Téléphone, Département, Commune, Arrondissement'}[selMN];
+  var ok={N1:pn&&nm&&tl&&dp&&cm,N3:pn&&nm&&tl&&dp&&cm&&ar}[selMN];
+  var msg={N1:'Requis : Prénom, Nom, Téléphone, Département, Commune à charge',N3:'Requis : Prénom, Nom, Téléphone, Département, Commune, Arrondissement'}[selMN];
   if(!ok){toast(msg,'#E74C3C');return;}
   /* vérifier la localité selon les restrictions */
   var locErr=null;

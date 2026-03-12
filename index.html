@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>WADAGNI 2026 — Plateforme</title>
+<style>
+:root{
+  --gold:#C9A84C;--gold2:#9A7B35;
+  --bg:#071B3A;--bg2:#092246;--bg3:#0B2E5E;--bg4:#0D3A78;
+  --green:#0B4EA2;--green2:#1A6FD4;
+  --cream:#F5EDD8;--cream2:#E8D9B8;--gray:#7A7A7A;
+  --n1:#C9A84C;--n2:#0B4EA2;--n3:#E67E22;--nt:#A569BD;
+  --red:#E74C3C;--blue:#2980B9;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);overflow:hidden;font-family:'Segoe UI',sans-serif;color:var(--cream);}
+#login-wrap{position:fixed;inset:0;background:linear-gradient(160deg,var(--bg),#071B3A);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;overflow-y:auto;}
+.login-box{width:100%;max-width:400px;}
+.login-top{text-align:center;margin-bottom:12px;}
+.login-top .flag{font-size:38px;}
+.login-top .title{font-size:19px;font-weight:900;color:var(--gold);margin-top:4px;}
+.login-top .sub{font-size:8px;letter-spacing:3px;color:var(--gray);}
+.login-card{background:linear-gradient(135deg,var(--bg3),var(--bg4));border-radius:14px;padding:14px;border:1px solid rgba(201,168,76,.25);}
+.lbl{font-size:8px;font-weight:700;letter-spacing:2px;color:var(--gold);font-family:monospace;display:block;margin-bottom:5px;}
+.code-inp{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(11,78,162,.4);background:rgba(4,13,7,.7);color:var(--cream);font-size:15px;letter-spacing:2px;text-align:center;font-weight:700;outline:none;margin-bottom:7px;font-family:monospace;box-sizing:border-box;}
+.code-inp:focus{border-color:var(--gold);}
+.login-btn{width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:7px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
+.login-sep{text-align:center;font-size:10px;color:var(--gray);margin:8px 0;}
+.login-err{color:var(--red);font-size:11px;text-align:center;margin-top:7px;min-height:15px;}
+.login-hint{margin-top:10px;font-size:10px;color:var(--gray);text-align:center;line-height:1.9;border-top:1px solid rgba(255,255,255,.07);padding-top:10px;}
+#countdown-bar{background:linear-gradient(135deg,rgba(201,168,76,.13),rgba(201,168,76,.04));border-bottom:1px solid rgba(201,168,76,.28);padding:5px 13px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cd-days{font-size:17px;font-weight:900;color:var(--gold);}
+.cd-lbl{font-size:8px;color:var(--cream2);}
+.cd-bar{flex:1;margin:0 11px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.cd-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:2px;}
+.cd-date{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:1px;}
+#app-wrap{display:none;flex-direction:column;height:100vh;max-width:560px;margin:0 auto;}
+#hdr{background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:2px solid var(--gold);padding:8px 13px;flex-shrink:0;}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;}
+.hdr-left{display:flex;align-items:center;gap:9px;}
+.hdr-logo{width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 11px rgba(201,168,76,.32);}
+.hdr-title{font-size:12px;font-weight:900;color:var(--cream);line-height:1.1;}
+.hdr-zone{font-size:7px;color:var(--gold);letter-spacing:2px;font-weight:600;}
+.hdr-role{font-size:9px;padding:3px 7px;border-radius:10px;font-weight:700;}
+.btn-logout{background:none;border:1px solid rgba(255,255,255,.1);color:var(--gray);cursor:pointer;font-size:10px;padding:4px 7px;border-radius:6px;font-family:inherit;}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#nav{flex-shrink:0;background:linear-gradient(180deg,#061428,var(--bg2));border-top:1px solid rgba(201,168,76,.14);display:flex;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 8px;background:none;border:none;cursor:pointer;position:relative;}
+.nav-btn .ni{font-size:17px;line-height:1;}
+.nav-btn .nl{font-size:7px;color:var(--gray);font-family:inherit;}
+.nav-btn.on .nl{color:var(--gold);font-weight:700;}
+.nav-badge{position:absolute;top:4px;right:5px;background:var(--red);color:#fff;font-size:7px;font-weight:700;border-radius:8px;padding:1px 4px;min-width:13px;text-align:center;display:none;}
+.nav-badge.show{display:block;}
+.scr{display:none;padding:11px 11px 74px;animation:fi .2s ease;}
+.scr.on{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.vw{display:none;}.vw.on{display:block;}
+.slbl{font-size:8px;font-weight:700;letter-spacing:3px;color:var(--gold);font-family:monospace;display:block;margin-bottom:9px;}
+.card{background:linear-gradient(135deg,var(--bg3),var(--bg4));border-radius:11px;padding:12px 13px;margin-bottom:8px;}
+.inp{width:100%;padding:10px 11px;border-radius:8px;border:1px solid rgba(11,78,162,.3);background:rgba(4,13,7,.6);color:var(--cream);font-size:13px;outline:none;margin-bottom:8px;font-family:inherit;}
+.inp:focus{border-color:var(--gold);}
+.inp::placeholder{color:var(--gray);}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237A7A7A'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;appearance:none;-webkit-appearance:none;}
+textarea.inp{resize:none;height:62px;line-height:1.5;}
+.flbl{font-size:8px;font-weight:700;letter-spacing:2px;color:var(--gold);font-family:monospace;display:block;margin-bottom:6px;margin-top:9px;}
+.flbl:first-child{margin-top:0;}
+.btn-gold{width:100%;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--bg);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn-back{padding:6px 11px;border-radius:8px;border:1px solid rgba(11,78,162,.45);background:none;color:var(--green2);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;}
+.btn-ghost{padding:6px 11px;border-radius:8px;border:1px solid rgba(201,168,76,.4);background:none;color:var(--gold);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;}
+.btn-del{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:2px 0 2px 7px;}
+.btn-red{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(231,76,60,.35);background:none;color:var(--red);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;margin-top:5px;}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.pg-back{display:flex;align-items:center;gap:9px;margin-bottom:11px;}
+.pg-title{font-size:14px;font-weight:700;color:var(--cream);}
+.empty{text-align:center;padding:34px 0;}
+.empty-i{font-size:32px;margin-bottom:7px;}
+.empty-t{font-size:12px;color:var(--gray);}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:9px;}
+.chip{padding:4px 9px;border-radius:14px;font-size:10px;cursor:pointer;border:1px solid transparent;font-family:inherit;}
+.srch{position:relative;margin-bottom:8px;}
+.srch-i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--gray);pointer-events:none;}
+.srch .inp{padding-left:29px;margin-bottom:0;}
+.pbar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:3px;}
+.pbar-f{height:100%;border-radius:2px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;}
+.niv-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.niv-opt{padding:7px 5px;border-radius:7px;text-align:center;cursor:pointer;border:1px solid transparent;}
+.det-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.det-row:last-child{border-bottom:none;}
+.consol-g{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:7px;}
+.c-cell{text-align:center;border-radius:7px;padding:7px 3px;}
+.c-val{font-size:14px;font-weight:900;line-height:1;}
+.c-lbl{font-size:8px;color:var(--gray);margin-top:2px;}
+.score-box{text-align:center;padding:8px;background:rgba(201,168,76,.07);border-radius:7px;border:1px solid rgba(201,168,76,.2);margin-bottom:8px;display:none;}
+.alerte{border-radius:9px;padding:10px 12px;margin-bottom:7px;border-left:4px solid;}
+.alerte.urg{background:rgba(231,76,60,.1);border-color:#E74C3C;}
+.alerte.imp{background:rgba(230,126,34,.1);border-color:#E67E22;}
+.alerte.inf{background:rgba(41,128,185,.1);border-color:#2980B9;}
+.alerte.res{background:rgba(11,78,162,.1);border-color:#0B4EA2;}
+.al-type{font-size:9px;font-weight:700;letter-spacing:2px;margin-bottom:3px;}
+.al-msg{font-size:12px;color:var(--cream);line-height:1.5;}
+.al-meta{font-size:10px;color:var(--gray);margin-top:4px;}
+#toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(13px);padding:8px 16px;border-radius:18px;font-size:12px;font-weight:600;opacity:0;transition:all .3s;z-index:999;pointer-events:none;white-space:nowrap;color:#fff;max-width:90vw;text-align:center;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media print{#nav,#hdr,#countdown-bar,#login-wrap,.btn-gold,.btn-back,.btn-ghost,.btn-del,.btn-red,.btn-logout,button{display:none!important;}html,body{overflow:visible!important;height:auto!important;background:#fff!important;color:#000!important;}#app-wrap{display:block!important;height:auto!important;max-width:100%!important;}#content{overflow:visible!important;}.scr{display:block!important;padding:0!important;}.card{background:#f8f8f8!important;border:1px solid #ccc!important;break-inside:avoid;}:root{--cream:#000;--cream2:#333;--gray:#555;--gold:#8B6914;--green:#0B4EA2;--bg3:#f0f0f0;--bg4:#e8e8e8;}}
+
+.admin-card{background:linear-gradient(135deg,#1A0505,#2E0808);border-radius:11px;padding:12px 13px;margin-bottom:8px;border:1px solid rgba(192,57,43,.35);}
+.admin-sec{font-size:8px;font-weight:700;letter-spacing:3px;color:#E74C3C;font-family:monospace;display:block;margin-bottom:9px;}
+.btn-admin{width:100%;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,#C0392B,#922B21);color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn-admin-sec{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(192,57,43,.4);background:none;color:#E74C3C;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;margin-top:5px;}
+.log-row{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.log-row:last-child{border-bottom:none;}
+.lock-badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;}
+
+.al-dest{display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;padding:2px 7px;border-radius:8px;margin-bottom:5px;}
+.al-dest.n1{background:rgba(201,168,76,.15);color:#C9A84C;border:1px solid rgba(201,168,76,.35);}
+.al-dest.all{background:rgba(11,78,162,.18);color:#5B9BF0;border:1px solid rgba(11,78,162,.4);}
+
+.wa-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:999;display:flex;align-items:flex-end;justify-content:center;}
+.wa-sheet{background:linear-gradient(180deg,#0B2E5E,#071B3A);border-radius:18px 18px 0 0;padding:18px 16px 28px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;border-top:2px solid rgba(37,211,102,.35);}
+.wa-title{font-size:15px;font-weight:900;color:#25D366;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.wa-sub{font-size:11px;color:var(--gray);margin-bottom:14px;line-height:1.6;}
+.wa-msg-box{background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.25);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--cream);line-height:1.7;white-space:pre-wrap;word-break:break-word;}
+.wa-nums{max-height:150px;overflow-y:auto;margin-bottom:12px;}
+.wa-num-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.wa-num-row:last-child{border:none;}
+.wa-num{font-size:12px;color:var(--cream);font-family:monospace;}
+.wa-num-name{font-size:11px;color:var(--gray);}
+.btn-wa{width:100%;padding:12px;border-radius:9px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-copy-num{width:100%;padding:10px;border-radius:9px;border:1px solid rgba(37,211,102,.4);background:none;color:#25D366;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:8px;}
+.btn-wa-ind{padding:7px 10px;border-radius:7px;border:none;background:rgba(37,211,102,.15);color:#25D366;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* ── CODE MODAL ── */
+#code-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;padding:16px;}
+#code-modal-overlay.on{display:flex;}
+.code-modal{background:#0B2E5E;border:2px solid #D4A017;border-radius:16px;padding:24px 20px;max-width:340px;width:100%;text-align:center;}
+.code-modal-title{font-size:13px;font-weight:700;color:#D4A017;letter-spacing:2px;font-family:monospace;margin-bottom:6px;}
+.code-modal-name{font-size:16px;font-weight:800;color:#F5EDD8;margin-bottom:16px;}
+.code-display{background:#071B3A;border:2px dashed #D4A017;border-radius:10px;padding:14px 12px;margin-bottom:14px;}
+.code-val{font-size:34px;font-weight:900;color:#D4A017;font-family:monospace;letter-spacing:6px;}
+.code-lbl{font-size:10px;color:#8A8A8A;margin-top:4px;}
+.code-warn{font-size:11px;color:#F1948A;background:rgba(231,76,60,.12);border-radius:7px;padding:8px 10px;margin-bottom:14px;line-height:1.5;}
+.btn-copy-code{width:100%;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,#D4A017,#A67C00);color:#071B3A;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:8px;}
+.btn-close-code{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(212,160,23,.35);background:none;color:#D4A017;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit;}
+
+/* ── LISTES DE DIFFUSION ── */
+.ldiff-card{background:linear-gradient(135deg,#071B3A,#0B2E5E);border-radius:12px;padding:15px;margin-bottom:10px;}
+.ldiff-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ldiff-title{font-size:13px;font-weight:800;color:#F5EDD8;}
+.ldiff-badge{font-size:18px;font-weight:900;font-family:Georgia,serif;}
+.ldiff-nums{max-height:180px;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:8px;padding:8px 10px;margin-bottom:10px;}
+.ldiff-num-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.ldiff-num-row:last-child{border:none;}
+.ldiff-num{font-size:12px;color:#F5EDD8;font-family:monospace;}
+.ldiff-name{font-size:10px;color:#8A8A8A;}
+.ldiff-empty{font-size:11px;color:#8A8A8A;padding:10px 0;text-align:center;}
+.ldiff-steps{background:rgba(37,211,102,.06);border:1px solid rgba(37,211,102,.2);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:10px;color:#8A8A8A;line-height:1.9;}
+.ldiff-steps strong{color:#25D366;}
+.btn-ldiff-copy{width:100%;padding:10px;border-radius:8px;border:none;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.4);color:#D4A017;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:7px;}
+.btn-ldiff-wa{width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;}
+.ldiff-updated{font-size:9px;color:#8A8A8A;text-align:right;margin-top:4px;}
+
+</style>
+</head>
+<body>
+
+
+<div id="login-wrap">
+  <div class="login-box">
+    <div class="login-top">
+      <div class="flag">🇧🇯</div>
+      <div class="title">WADAGNI 2026</div>
+      <div class="sub">PLATEFORME DE COORDINATION</div>
+    </div>
+
+    <!-- ── Connexion Membres ── -->
+    <div class="login-card" id="form-mem" style="margin-bottom:8px;">
+      <span class="lbl">📞 CONNEXION MEMBRE</span>
+      <input class="code-inp" id="login-tel" type="tel" placeholder="Numéro WhatsApp"
+        autocomplete="off" inputmode="tel"
+        onkeyup="if(event.key==='Enter')loginByTel()"/>
+      <div id="login-cd-wrap">
+        <input class="code-inp" id="login-cd" type="text" placeholder="Code personnel (si vous en avez un)"
+          autocorrect="off" autocapitalize="characters" autocomplete="off" spellcheck="false"
+          style="text-transform:uppercase;"
+          oninput="this.value=(this.value||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'')" onkeyup="if(event.key==='Enter')loginByTel()"/>
+      </div>
+      <button class="login-btn" style="background:linear-gradient(135deg,#0B4EA2,#1A6FD4);margin-top:2px;" onclick="loginByTel()">📞 SE CONNECTER</button>
+    </div>
+
+    <!-- ── Connexion Admin ── -->
+    <div class="login-card" style="border-color:rgba(231,76,60,.35);">
+      <span class="lbl" style="color:#E74C3C;">🔑 ACCÈS ADMINISTRATEUR</span>
+      <input class="code-inp" id="login-code" type="text" placeholder="Code ADMIN-XXXX"
+        autocorrect="off" autocapitalize="characters" autocomplete="off" spellcheck="false"
+        style="border-color:rgba(231,76,60,.4);"
+        oninput="this.value=(this.value||''  ).toUpperCase().replace(/[^A-Z0-9\-]/g,'')" onkeyup="if(event.key==='Enter')doLogin()"/>
+      <button class="login-btn" style="background:linear-gradient(135deg,#C0392B,#922B21);" onclick="doLogin()">🔑 ACCÈS ADMIN</button>
+    </div>
+
+    <div class="login-err" id="login-err" style="margin-top:8px;text-align:center;"></div>
+  </div>
+</div>
+
+<div id="app-wrap">
+  <div id="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-left">
+        <div class="hdr-logo">🇧🇯</div>
+        <div><div class="hdr-title">WADAGNI 2026</div><div class="hdr-zone" id="hdr-zone">COORDINATION</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <div class="hdr-role" id="hdr-role"></div>
+        <button class="btn-logout" onclick="doLogout()">Quitter</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="countdown-bar">
+    <div><div class="cd-days" id="cd-days">—</div><div class="cd-lbl">jours restants</div></div>
+    <div class="cd-bar"><div class="cd-fill" id="cd-fill" style="width:0%"></div></div>
+    <div style="text-align:right;"><div class="cd-date">12 AVRIL 2026</div><div class="cd-lbl" id="cd-sub">Élection Présidentielle</div></div>
+  </div>
+
+  <div id="content">
+
+    <div class="scr on" id="scr-dash">
+      <span class="slbl" style="margin-top:2px">TABLEAU DE BORD</span>
+      <div class="stat-grid" id="d-stats"></div>
+      <div id="d-alertes-sum"></div>
+      <div id="d-res"></div>
+      <div class="card" style="border:1px solid rgba(201,168,76,.2);">
+        <span class="slbl">ACTIVITÉS RÉCENTES</span><div id="d-act"></div>
+      </div>
+      <div class="card" style="border:1px solid rgba(255,255,255,.06);margin-bottom:0;">
+        <span class="slbl">BASE ADMINISTRATIVE — IGN BÉNIN 2024</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px;">
+          <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.14);border-radius:7px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--gold);">12</div><div style="font-size:9px;color:var(--gray);">Départements</div></div>
+          <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.14);border-radius:7px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--gold);">77</div><div style="font-size:9px;color:var(--gray);">Communes</div></div>
+          <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.14);border-radius:7px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--gold);">546</div><div style="font-size:9px;color:var(--gray);">Arrondissements</div></div>
+          <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.14);border-radius:7px;padding:9px;text-align:center;"><div style="font-size:17px;font-weight:900;color:var(--gold);">5 295</div><div style="font-size:9px;color:var(--gray);">Villages/Quartiers</div></div>
+        </div>
+        <div style="background:rgba(201,168,76,.06);border-radius:7px;padding:7px 11px;border:1px solid rgba(201,168,76,.11);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--cream2);">Objectif mobilisateurs</span>
+          <span style="font-size:16px;font-weight:900;color:var(--gold);">26 775</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-mem">
+      <div class="vw on" id="v-ml">
+        <div class="row"><span class="slbl" style="margin:0" id="mem-lbl">MEMBRES (0)</span><button class="btn-ghost" onclick="openView('v-ma');initMF()">+ Ajouter</button></div>
+        <div class="srch"><span class="srch-i">🔍</span><input class="inp" id="mem-s" placeholder="Rechercher nom, commune, téléphone…" oninput="rMem()"/></div>
+        <div id="mem-scope"></div>
+        <div class="chips" id="mem-chips"></div>
+        <div id="mem-list"></div>
+      </div>
+      <div class="vw" id="v-ma">
+        <div class="pg-back"><button class="btn-back" onclick="openView('v-ml')">← Retour</button><span class="pg-title">Nouveau Membre</span></div>
+        <div class="card">
+          <span class="flbl">IDENTITÉ</span>
+          <input class="inp" id="m-pn" placeholder="Prénom *"/>
+          <input class="inp" id="m-nm" placeholder="Nom *"/>
+          <input class="inp" id="m-tl" placeholder="Téléphone / WhatsApp *" type="tel"/>
+          <span class="flbl">NIVEAU</span>
+          <div class="niv-grid" id="m-niv"></div>
+          <div id="m-niv-hint" style="font-size:10px;color:var(--gold);background:rgba(201,168,76,.07);border-radius:7px;padding:7px 10px;margin-bottom:8px;line-height:1.6;"></div>
+          <div id="m-loc-sec" style="display:none">
+            <span class="flbl">LOCALITÉ</span>
+            <select class="inp" id="m-dp" onchange="updCommunes('m-dp','m-cm')">
+              <option value="">Département *</option>
+              <option>Alibori</option><option>Atacora</option><option>Atlantique</option><option>Borgou</option><option>Collines</option><option>Couffo</option><option>Donga</option><option>Littoral</option><option>Mono</option><option>Ouémé</option><option>Plateau</option><option>Zou</option>
+            </select>
+            <select class="inp" id="m-cm"><option value="">Commune * (choisir département d'abord)</option></select>
+          </div>
+          <div id="m-ar-sec" style="display:none">
+            <span class="flbl">ARRONDISSEMENT</span>
+            <input class="inp" id="m-ar" placeholder="Arrondissement de résidence *"/>
+          </div>
+          <div id="m-vl-sec" style="display:none">
+            <span class="flbl">VILLAGE / QUARTIER</span>
+            <input class="inp" id="m-vl" placeholder="Village / Quartier de ville *"/>
+          </div>
+          <textarea class="inp" id="m-ob" placeholder="Observations (optionnel)" style="margin-top:8px;"></textarea>
+          <button class="btn-gold" onclick="saveMem()">✅ Enregistrer</button>
+        </div>
+      </div>
+      <div class="vw" id="v-md">
+        <div class="pg-back"><button class="btn-back" onclick="openView('v-ml')">← Retour</button><span class="pg-title">Fiche Membre</span></div>
+        <div id="mem-det"></div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-act">
+      <div class="vw on" id="v-al">
+        <div class="row"><span class="slbl" style="margin:0" id="act-lbl">ACTIVITÉS (0)</span><button class="btn-ghost" onclick="openView('v-aa');initAF()">+ Ajouter</button></div>
+        <div class="chips" id="act-chips"></div>
+        <div id="act-list"></div>
+      </div>
+      <div class="vw" id="v-aa">
+        <div class="pg-back"><button class="btn-back" onclick="openView('v-al')">← Retour</button><span class="pg-title">Nouvelle Activité</span></div>
+        <div class="card">
+          <span class="flbl">ACTEUR</span>
+          <input class="inp" id="a-ac" placeholder="Nom de l'acteur *" list="a-dl"/><datalist id="a-dl"></datalist>
+          <span class="flbl">NIVEAU</span><div class="niv-grid" id="a-niv"></div>
+          <span class="flbl">TYPE D'ACTIVITÉ</span>
+          <select class="inp" id="a-tp">
+            <option value="">Sélectionner *</option><option>Réunion tenue</option><option>Sensibilisation porte-à-porte</option><option>Sensibilisation collective</option><option>Formation des équipes</option><option>Recrutement sensibilisateurs</option><option>Rapport de situation</option><option>Problème / Alerte signalée</option><option>Mobilisation bureau de vote</option><option>Vérification liste électorale</option><option>Autre</option>
+          </select>
+          <textarea class="inp" id="a-ds" placeholder="Description (optionnel)"></textarea>
+          <input class="inp" id="a-dt" type="date"/>
+          <span class="flbl">LOCALITÉ</span>
+          <select class="inp" id="a-dp" onchange="updCommunes('a-dp','a-cm')">
+            <option value="">Département</option>
+            <option>Alibori</option><option>Atacora</option><option>Atlantique</option><option>Borgou</option><option>Collines</option><option>Couffo</option><option>Donga</option><option>Littoral</option><option>Mono</option><option>Ouémé</option><option>Plateau</option><option>Zou</option>
+          </select>
+          <select class="inp" id="a-cm"><option value="">Commune (choisir département d'abord)</option></select>
+          <input class="inp" id="a-nb" type="number" placeholder="Nombre de personnes touchées"/>
+          <button class="btn-gold" onclick="saveAct()">✅ Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-alert">
+      <div class="vw on" id="v-aletl">
+        <div class="row"><span class="slbl" style="margin:0" id="alert-lbl">ALERTES (0)</span><button class="btn-ghost" onclick="openView('v-aleta');initALForm()">+ Signaler</button></div>
+        <div class="chips" id="alert-chips"></div>
+        <div id="alert-list"></div>
+      </div>
+      <div class="vw" id="v-aleta">
+        <div class="pg-back"><button class="btn-back" onclick="openView('v-aletl')">← Retour</button><span class="pg-title">Signaler une Alerte</span></div>
+        <div class="card" style="border:1px solid rgba(231,76,60,.3);">
+          <span class="flbl">NIVEAU D'URGENCE</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">
+            <div class="niv-opt" id="al-urg" onclick="pickAL('urg')" style="border-color:#E74C3C;background:rgba(231,76,60,.12);"><div style="font-size:17px;">🚨</div><div style="font-size:9px;color:#E74C3C;font-weight:700;margin-top:2px;">URGENT</div></div>
+            <div class="niv-opt" id="al-imp" onclick="pickAL('imp')" style="border-color:rgba(230,126,34,.2);"><div style="font-size:17px;">⚠️</div><div style="font-size:9px;color:#7A7A7A;margin-top:2px;">IMPORTANT</div></div>
+            <div class="niv-opt" id="al-inf" onclick="pickAL('inf')" style="border-color:rgba(41,128,185,.2);"><div style="font-size:17px;">ℹ️</div><div style="font-size:9px;color:#7A7A7A;margin-top:2px;">INFORMATION</div></div>
+            <div class="niv-opt" id="al-res" onclick="pickAL('res')" style="border-color:rgba(11,78,162,.2);"><div style="font-size:17px;">✅</div><div style="font-size:9px;color:#7A7A7A;margin-top:2px;">RÉSOLU</div></div>
+          </div>
+          <span class="flbl">MESSAGE</span>
+          <textarea class="inp" id="al-msg" placeholder="Décrivez la situation en détail *" style="height:78px;"></textarea>
+          <div id="al-dest-sec" style="display:none;">
+            <span class="flbl" style="color:#C9A84C;">📢 DIFFUSER À</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">
+              <div class="niv-opt" id="al-dest-N1" onclick="pickDest('N1')" style="border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.1);">
+                <div style="font-size:17px;">⭐</div>
+                <div style="font-size:9px;color:#C9A84C;font-weight:700;margin-top:2px;">COORDINATION N1</div>
+              </div>
+              <div class="niv-opt" id="al-dest-ALL" onclick="pickDest('ALL')" style="border-color:rgba(11,78,162,.25);">
+                <div style="font-size:17px;">📡</div>
+                <div style="font-size:9px;color:#7A7A7A;margin-top:2px;">TOUS LES MEMBRES</div>
+              </div>
+            </div>
+          </div>
+          <span class="flbl">SIGNALÉ PAR</span>
+          <input class="inp" id="al-par" placeholder="Nom + fonction" list="al-dl"/><datalist id="al-dl"></datalist>
+          <span class="flbl">LOCALITÉ</span>
+          <select class="inp" id="al-dp" onchange="updCommunes('al-dp','al-cm')">
+            <option value="">Département</option>
+            <option>Alibori</option><option>Atacora</option><option>Atlantique</option><option>Borgou</option><option>Collines</option><option>Couffo</option><option>Donga</option><option>Littoral</option><option>Mono</option><option>Ouémé</option><option>Plateau</option><option>Zou</option>
+          </select>
+          <select class="inp" id="al-cm"><option value="">Commune</option></select>
+          <button class="btn-gold" style="background:linear-gradient(135deg,#E74C3C,#C0392B);" onclick="saveAlert()">🚨 Soumettre l'alerte</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-res">
+      <div class="vw on" id="v-rl">
+        <div class="row"><span class="slbl" style="margin:0" id="res-lbl">RÉSULTATS (0)</span><button class="btn-ghost" onclick="openView('v-ra')">+ Saisir</button></div>
+        <div id="res-consol"></div><div id="res-list"></div>
+      </div>
+      <div class="vw" id="v-ra">
+        <div class="pg-back"><button class="btn-back" onclick="openView('v-rl')">← Retour</button><span class="pg-title">Saisie Résultats</span></div>
+        <div class="card" style="border:1px solid rgba(201,168,76,.3);">
+          <span class="flbl">BUREAU DE VOTE</span>
+          <select class="inp" id="r-dp" onchange="updCommunes('r-dp','r-cm')">
+            <option value="">Département</option>
+            <option>Alibori</option><option>Atacora</option><option>Atlantique</option><option>Borgou</option><option>Collines</option><option>Couffo</option><option>Donga</option><option>Littoral</option><option>Mono</option><option>Ouémé</option><option>Plateau</option><option>Zou</option>
+          </select>
+          <select class="inp" id="r-cm"><option value="">Commune</option></select>
+          <input class="inp" id="r-ar" placeholder="Arrondissement"/>
+          <input class="inp" id="r-bv" placeholder="N° ou Nom Bureau de Vote *"/>
+          <span class="flbl">RÉSULTATS</span>
+          <input class="inp" id="r-vt" type="number" placeholder="Total votants" oninput="updScore()"/>
+          <input class="inp" id="r-wx" type="number" placeholder="Voix WADAGNI *" oninput="updScore()"/>
+          <div class="score-box" id="s-box"><span style="font-size:21px;font-weight:900;color:var(--gold);" id="s-val">—</span><div style="font-size:9px;color:var(--gray);margin-top:2px;">Score WADAGNI</div></div>
+          <input class="inp" id="r-co" placeholder="Coordonnateur responsable" list="r-dl"/><datalist id="r-dl"></datalist>
+          <textarea class="inp" id="r-ob" placeholder="Incidents, observations…"></textarea>
+          <button class="btn-gold" onclick="saveRes()">🗳 Soumettre</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="scr" id="scr-sync">
+      <span class="slbl" style="margin-top:2px;">SYNCHRONISATION</span>
+      <div class="card" style="border:1px solid rgba(201,168,76,.3);margin-bottom:8px;">
+        <span class="slbl">⬇ EXPORTER MES DONNÉES</span>
+        <p style="font-size:12px;color:var(--cream2);margin-bottom:9px;line-height:1.6;">Génère un fichier <strong style="color:var(--gold)">.json</strong> à envoyer par WhatsApp à la Coordination Nationale.</p>
+        <button class="btn-gold" style="margin-top:0;" onclick="doExport()">⬇ Exporter (JSON)</button>
+        <p style="font-size:10px;color:var(--gray);margin-top:6px;line-height:1.6;">• Envoyez ce fichier après chaque session<br>• La Coordination l'importe pour consolider</p>
+      </div>
+      <div class="card" style="border:1px solid rgba(41,128,185,.3);margin-bottom:8px;">
+        <span class="slbl">🖨 RAPPORT PDF IMPRIMABLE</span>
+        <p style="font-size:12px;color:var(--cream2);margin-bottom:9px;line-height:1.6;">Génère un rapport complet pour impression ou envoi PDF.</p>
+        <button class="btn-gold" style="background:linear-gradient(135deg,#2980B9,#1A5C8A);margin-top:0;" onclick="doPrint()">🖨 Générer le rapport PDF</button>
+        <p style="font-size:10px;color:var(--gray);margin-top:6px;line-height:1.6;">• Fichier → Imprimer → Enregistrer en PDF<br>• Inclut membres, activités, résultats, alertes</p>
+      </div>
+      <div class="card" style="border:1px solid rgba(11,78,162,.3);margin-bottom:8px;">
+        <span class="slbl">⬆ IMPORTER ET FUSIONNER</span>
+        <p style="font-size:12px;color:var(--cream2);margin-bottom:9px;line-height:1.6;">Pour la Coordination Nationale : importez les fichiers reçus des coordonnateurs.</p>
+        <label style="display:block;width:100%;padding:11px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;font-weight:800;font-size:13px;cursor:pointer;text-align:center;">
+          ⬆ Importer un fichier JSON<input type="file" accept=".json" style="display:none;" onchange="doImport(event)"/>
+        </label>
+        <p style="font-size:10px;color:var(--gray);margin-top:6px;line-height:1.6;">• Doublons détectés automatiquement<br>• Importez autant de fichiers que vous recevez</p>
+      </div>
+      <div class="card" style="border:1px solid rgba(255,255,255,.07);">
+        <span class="slbl">ÉTAT DE LA BASE</span>
+        <div id="sync-stats"></div>
+        <button class="btn-red" onclick="doReset()">🗑 Réinitialiser toutes les données</button>
+      </div>
+    </div>
+
+
+    <!-- ADMIN -->
+    <div class="scr" id="scr-admin">
+      <span class="slbl" style="margin-top:2px;color:#E74C3C;">🔑 PANNEAU ADMINISTRATEUR</span>
+
+      <!-- Verrouillage plateforme -->
+      <div class="admin-card">
+        <span class="admin-sec">🔒 VERROUILLAGE DE LA PLATEFORME</span>
+        <p style="font-size:12px;color:#F1948A;margin-bottom:10px;line-height:1.6;">Quand verrouillée, seul l'administrateur peut se connecter. Les codes N1 et N3 sont bloqués.</p>
+        <div style="text-align:center;margin-bottom:10px;">
+          <span class="lock-badge" id="lock-status"></span>
+        </div>
+        <button class="btn-admin" id="btn-lock" onclick="toggleLock()">…</button>
+      </div>
+
+
+
+      <!-- Journal des connexions -->
+      <div class="admin-card">
+        <span class="admin-sec">📋 JOURNAL DES CONNEXIONS</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:11px;color:var(--cream2);" id="log-count">0 entrées</span>
+          <button class="btn-ghost" style="font-size:10px;padding:4px 8px;" onclick="clearLog()">Effacer</button>
+        </div>
+        <div id="log-list" style="max-height:220px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Diffusion de messages -->
+      <div class="admin-card">
+        <span class="admin-sec">📢 DIFFUSION DE MESSAGES</span>
+        <p style="font-size:12px;color:#F1948A;margin-bottom:10px;line-height:1.6;">Envoyez un message via les alertes à un groupe ciblé.</p>
+        <span class="flbl">DESTINATAIRES</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;">
+          <div class="niv-opt" id="adm-dest-N1" onclick="admPickDest('N1')" style="border-color:#C9A84C;background:rgba(201,168,76,.12);">
+            <div style="font-size:17px;">⭐</div>
+            <div style="font-size:9px;color:#C9A84C;font-weight:700;margin-top:2px;">COORDINATION N1</div>
+          </div>
+          <div class="niv-opt" id="adm-dest-ALL" onclick="admPickDest('ALL')" style="border-color:rgba(11,78,162,.25);">
+            <div style="font-size:17px;">📡</div>
+            <div style="font-size:9px;color:#7A7A7A;margin-top:2px;">TOUS LES MEMBRES</div>
+          </div>
+        </div>
+        <span class="flbl">NIVEAU D'URGENCE</span>
+        <select class="inp" id="adm-urg">
+          <option value="inf">ℹ️ Information</option>
+          <option value="imp">⚠️ Important</option>
+          <option value="urg">🚨 Urgent</option>
+        </select>
+        <span class="flbl">MESSAGE</span>
+        <textarea class="inp" id="adm-msg" placeholder="Rédigez votre message *" style="height:90px;"></textarea>
+        <button class="btn-admin" onclick="admBroadcast()">📢 Diffuser le message</button>
+      </div>
+
+
+      <!-- Listes de diffusion WhatsApp -->
+      <div class="admin-card">
+        <span class="admin-sec">📋 LISTES DE DIFFUSION WHATSAPP</span>
+        <p style="font-size:12px;color:#F1948A;margin-bottom:12px;line-height:1.6;">Deux listes prêtes à créer dans WhatsApp. Copiez les numéros puis suivez les étapes.</p>
+
+        <!-- Liste N1 -->
+        <div class="ldiff-card" style="border:1px solid rgba(201,168,76,.3);">
+          <div class="ldiff-header">
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#D4A017;font-family:monospace;">LISTE 1 — COORDINATION N1</div>
+              <div class="ldiff-title">⭐ Coordination Nationale</div>
+            </div>
+            <div class="ldiff-badge" style="color:#D4A017;" id="ldiff-n1-count">0</div>
+          </div>
+          <div class="ldiff-nums" id="ldiff-n1-list"></div>
+          <div class="ldiff-steps">
+            <strong>Comment créer la liste dans WhatsApp :</strong><br>
+            1️⃣ Copiez les numéros ci-dessous<br>
+            2️⃣ WhatsApp → <strong>⋮ Menu → Nouvelle diffusion</strong><br>
+            3️⃣ Recherchez chaque contact ou collez le numéro<br>
+            4️⃣ Nommez la liste <strong>"WADAGNI N1"</strong> → Créer
+          </div>
+          <button class="btn-ldiff-copy" onclick="copyListNums('N1')">📋 Copier tous les numéros N1</button>
+          <button class="btn-ldiff-wa" onclick="openWAList('N1')"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Ouvrir WhatsApp — Liste N1</button>
+          <div class="ldiff-updated" id="ldiff-n1-updated"></div>
+        </div>
+
+        <!-- Liste ALL -->
+        <div class="ldiff-card" style="border:1px solid rgba(11,78,162,.4);">
+          <div class="ldiff-header">
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:#5B9BF0;font-family:monospace;">LISTE 2 — TOUS LES MEMBRES</div>
+              <div class="ldiff-title">📡 N1 + N3 — Diffusion générale</div>
+            </div>
+            <div class="ldiff-badge" style="color:#5B9BF0;" id="ldiff-all-count">0</div>
+          </div>
+          <div class="ldiff-nums" id="ldiff-all-list"></div>
+          <div class="ldiff-steps">
+            <strong>Comment créer la liste dans WhatsApp :</strong><br>
+            1️⃣ Copiez les numéros ci-dessous<br>
+            2️⃣ WhatsApp → <strong>⋮ Menu → Nouvelle diffusion</strong><br>
+            3️⃣ Recherchez chaque contact ou collez le numéro<br>
+            4️⃣ Nommez la liste <strong>"WADAGNI TOUS"</strong> → Créer
+          </div>
+          <button class="btn-ldiff-copy" onclick="copyListNums('ALL')">📋 Copier tous les numéros (N1+N3)</button>
+          <button class="btn-ldiff-wa" onclick="openWAList('ALL')"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> Ouvrir WhatsApp — Liste générale</button>
+          <div class="ldiff-updated" id="ldiff-all-updated"></div>
+        </div>
+      </div>
+      <!-- Membres — gestion complète -->
+      <div class="admin-card">
+        <span class="admin-sec">👥 GESTION MEMBRES (ACCÈS TOTAL)</span>
+        <p style="font-size:12px;color:#F1948A;margin-bottom:10px;line-height:1.6;">Tous les membres, tous niveaux, toutes communes.</p>
+        <button class="btn-admin" onclick="goTabById('mem')">→ Aller à la liste des membres</button>
+        <p style="font-size:10px;color:#888;margin-top:6px;line-height:1.6;">En tant qu'administrateur, vous pouvez modifier et supprimer n'importe quel membre depuis sa fiche.</p>
+      </div>
+    </div>
+  </div>
+
+  <nav id="nav">
+    <button class="nav-btn on" data-s="dash"  onclick="goTab(this)"><span class="ni">📊</span><span class="nl">Accueil</span></button>
+    <button class="nav-btn"   data-s="mem"   onclick="goTab(this)"><span class="ni">👥</span><span class="nl">Membres</span></button>
+    <button class="nav-btn"   data-s="act"   onclick="goTab(this)"><span class="ni">📋</span><span class="nl">Activités</span></button>
+    <button class="nav-btn"   data-s="alert" onclick="goTab(this)"><span class="ni">🚨</span><span class="nl">Alertes</span><span class="nav-badge" id="alert-badge">0</span></button>
+    <button class="nav-btn"   data-s="res"   onclick="goTab(this)"><span class="ni">🗳</span><span class="nl">Résultats</span></button>
+    <button class="nav-btn"   data-s="sync"  onclick="goTab(this)"><span class="ni">🔄</span><span class="nl">Sync</span></button>
+    <button class="nav-btn" id="nav-admin" data-s="admin" onclick="goTab(this)" style="display:none"><span class="ni">🔑</span><span class="nl">Admin</span></button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var COMMUNES={Alibori:['Banikoara','Gogounou','Kandi','Karimama','Malanville','Ségbana'],Atacora:['Boukoumbé','Cobly','Kérou','Kouandé','Matéri','Natitingou','Péhunco','Tanguiéta','Toukountouna'],Atlantique:['Abomey-Calavi','Allada','Kpomassè','Misérété','Ouidah','Sô-Ava','Toffo','Tori-Bossito','Zè'],Borgou:['Bembèrèkè','Kalale',"N'Dali",'Nikki','Parakou','Pèrèrè','Sinendé','Tchaourou'],Collines:['Bantè','Dassa-Zoumè','Glazoué','Ouèssè','Savalou','Savè'],Couffo:['Aplahoué','Djakotomey','Dogbo','Klouékanmè','Lalo','Toviklin'],Donga:['Bassila','Copargo','Djougou','Ouaké'],Littoral:['Cotonou'],Mono:['Athiémé','Bopa','Comè','Grand-Popo','Houéyogbé','Lokossa'],Ouémé:['Adjarra','Adjohoun','Akpro-Missérété','Avrankou','Bonou','Dangbo','Porto-Novo','Sèmè-Podji'],Plateau:['Adja-Ouèrè','Ifangni','Kétou','Pobè','Sakété'],Zou:['Abomey','Agbangnizoun','Bohicon','Covè','Djidja','Ouinhi','Za-Kpota','Zangnanado','Zogbodomè']};
+function updCommunes(dId,cId){var dep=(document.getElementById(dId)||{}).value,sel=document.getElementById(cId);if(!sel)return;var lst=COMMUNES[dep]||[];sel.innerHTML='<option value="">'+(lst.length?'Sélectionner la commune':'Choisir...')+'</option>';lst.forEach(function(c){sel.innerHTML+='<option>'+c+'</option>';});}
+/* ── STOCKAGE HYBRIDE : localStorage + RAM fallback ── */
+var _MEM={};
+var _LS_OK=(function(){try{localStorage.setItem('_t','1');localStorage.removeItem('_t');return true;}catch(e){return false;}})();
+var DB={
+  get:function(k){
+    if(_LS_OK){try{var v=localStorage.getItem('w:'+k);if(v!==null)return JSON.parse(v);}catch(e){}}
+    return _MEM.hasOwnProperty(k)?_MEM[k]:[];
+  },
+  set:function(k,v){
+    _MEM[k]=v;
+    if(_LS_OK){try{localStorage.setItem('w:'+k,JSON.stringify(v));}catch(e){}}
+  },
+  del:function(k){
+    delete _MEM[k];
+    if(_LS_OK){try{localStorage.removeItem('w:'+k);}catch(e){}}
+  }
+};
+var DATA={membres:[],activites:[],resultats:[],alertes:[]};
+function loadData(){DATA.membres=DB.get('m');DATA.activites=DB.get('a');DATA.resultats=DB.get('r');DATA.alertes=DB.get('al');}
+function saveM(){DB.set('m',DATA.membres);}function saveA(){DB.set('a',DATA.activites);}function saveR(){DB.set('r',DATA.resultats);}function saveAL(){DB.set('al',DATA.alertes);}
+var CODES_DEF={'N1-COORD':{niv:'N1',lbl:'Coordination Nationale',col:'#C9A84C'},'N3-FOCAL':{niv:'N3',lbl:'Point Focal',col:'#E67E22'}};
+var CODES=Object.assign({},CODES_DEF,{'ADMIN-2026':{niv:'ADM',lbl:'Administrateur',col:'#E74C3C'}});
+function loadCodes(){var c=DB.get('codes');if(c&&c.n1&&c.n3){var old=CODES;delete old[c._oldN1||''];delete old[c._oldN3||''];CODES[c.n1]=CODES_DEF['N1-COORD'];CODES[c.n3]=CODES_DEF['N3-FOCAL'];CODES['ADMIN-2026']={niv:'ADM',lbl:'Administrateur',col:'#E74C3C'};}}
+var SES=null;
+/* ── CONTRÔLE D'ACCÈS PAR NIVEAU ── */
+function getAccess(){
+  if(!SES)return{nivs:['N1','N3'],filter:null,scope:null};
+  var niv=SES.niv;
+  if(niv==='ADM')return{nivs:['N1','N3'],filter:null,scope:null};
+  if(niv==='N1'){
+    /* N1 connecté par tel : voit N3 de sa commune uniquement */
+    var ns=['N1','N3'];
+    var f=SES.cm?function(m){return(m.niv==='N1'&&m.cm===SES.cm)||( m.niv==='N3'&&m.cm===SES.cm);}:function(m){return true;};
+    return{nivs:ns,filter:SES.cm?f:null,scope:SES.cm?'Commune : '+SES.cm+(SES.dp?' ('+SES.dp+')':''):null};
+  }
+  /* N3 : voit les Points Focaux de son arrondissement */
+  var ns=['N3'];
+  var f=SES.ar&&SES.cm?function(m){return m.niv==='N3'&&m.cm===SES.cm&&m.ar===SES.ar;}:function(m){return m.niv==='N3';};
+  return{nivs:ns,filter:f,scope:SES.ar?'Arrond. : '+SES.ar+(SES.cm?', '+SES.cm:''):null};
+}
+function toggleAdminForm(){var f=document.getElementById('admin-form'),t=document.getElementById('admin-toggle');if(f.style.display==='none'){f.style.display='block';t.style.color='rgba(231,76,60,.5)';}else{f.style.display='none';t.style.color='rgba(255,255,255,.25)';}}
+function doLogin(){try{var rawVal=document.getElementById('login-code').value||'';var code=rawVal.trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');var errEl=document.getElementById('login-err');if(!code){if(errEl)errEl.textContent='❌ Entrez le code administrateur';return;}if(code!=='ADMIN-2026'){if(errEl)errEl.textContent='❌ Code incorrect : '+code;return;}var match=CODES['ADMIN-2026'];if(!match){if(errEl)errEl.textContent='❌ Erreur interne — rechargez la page';return;}SES={code:code,niv:match.niv,lbl:match.lbl,col:match.col,name:''};try{logEvent('login',code,match.niv,'');}catch(e2){}try{persist();}catch(e3){}enter();}catch(e){var er=document.getElementById('login-err');if(er)er.textContent='❌ Erreur: '+e.message;}}
+function loginByTel(){var tel=(document.getElementById('login-tel').value||'').trim().replace(/\s/g,'');var cd=(document.getElementById('login-cd').value||'').trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');if(!tel){document.getElementById('login-err').textContent='❌ Entrez votre numéro WhatsApp';return;}if(DB.get('lock')===true){document.getElementById('login-err').textContent='🔒 Plateforme verrouillée. Contactez l\'administrateur.';return;}var members=DB.get('m'),found=null;for(var i=0;i<members.length;i++){var mt=(members[i].tl||'').replace(/\s/g,'');if(mt&&(mt===tel||mt.endsWith(tel)||tel.endsWith(mt))){found=members[i];break;}}if(!found){document.getElementById('login-err').textContent='❌ Numéro non trouvé. Contactez votre responsable.';return;}/* vérifier le code seulement si le membre en a un */var memberCode=(found.cd||'').toUpperCase().replace(/[^A-Z0-9\-]/g,'');if(memberCode){if(!cd){document.getElementById('login-err').textContent='❌ Entrez votre code personnel';return;}if(memberCode!==cd){document.getElementById('login-err').textContent='❌ Code personnel incorrect. Contactez votre responsable.';return;}}var nm={N1:{col:'#C9A84C',lbl:'Coordination Nationale'},N3:{col:'#E67E22',lbl:'Point Focal'}}[found.niv]||{col:'#E67E22',lbl:'Point Focal'};SES={code:'TEL-'+tel,niv:found.niv,lbl:nm.lbl,col:nm.col,name:found.pn+' '+found.nm,dp:found.dp||'',cm:found.cm||'',ar:found.ar||'',vl:found.vl||''};logEvent('login','TEL',found.niv,found.pn+' '+found.nm);persist();enter();}
+function persist(){DB.set('ses',SES);}
+function enter(){try{document.getElementById('login-err').textContent='';document.getElementById('login-wrap').style.display='none';document.getElementById('app-wrap').style.display='flex';applyRole();loadData();renderAll();updCountdown();}catch(e){document.getElementById('login-wrap').style.display='flex';document.getElementById('login-err').textContent='⚠️ Erreur: '+e.message;}}
+function doLogout(){if(SES)logEvent('logout',SES.code,SES.niv,SES.name);DB.del('ses');SES=null;document.getElementById('app-wrap').style.display='none';document.getElementById('login-wrap').style.display='flex';var lc=document.getElementById('login-code');if(lc)lc.value='';var lt=document.getElementById('login-tel');if(lt)lt.value='';var lcd=document.getElementById('login-cd');if(lcd)lcd.value='';}
+function applyRole(){if(!SES)return;var acc=getAccess();var zone=(SES.name?SES.name:SES.lbl).toUpperCase();if(SES.niv==='ADM')zone='ADMINISTRATEUR';else if(acc.scope)zone=acc.scope.toUpperCase();document.getElementById('hdr-zone').textContent=zone;var rol=document.getElementById('hdr-role');rol.textContent=SES.niv==='ADM'?'🔑 ADMIN':SES.niv;rol.style.cssText='color:'+SES.col+';border:1px solid '+SES.col+';background:'+SES.col+'18;font-size:9px;padding:3px 7px;border-radius:10px;font-weight:700;';var na=document.getElementById('nav-admin');if(na)na.style.display=SES.niv==='ADM'?'':'none';}
+function updCountdown(){var el=new Date('2026-04-12'),st=new Date('2026-01-01'),now=new Date(),days=Math.max(0,Math.ceil((el-now)/86400000)),total=Math.ceil((el-st)/86400000),pct=Math.max(0,Math.min(100,100-(days/total*100)));document.getElementById('cd-days').textContent=days;document.getElementById('cd-fill').style.width=pct+'%';document.getElementById('cd-sub').textContent=days===0?'JOUR J — ÉLECTION !':days<=7?'⚡ DERNIÈRE SEMAINE !':days<=14?'⚠️ PHASE FINALE':'Élection Présidentielle';}
+var curTab='dash';
+function goTab(btn){var s=btn.dataset.s;document.querySelectorAll('.scr').forEach(function(el){el.classList.remove('on');});document.querySelectorAll('.nav-btn').forEach(function(el){el.classList.remove('on');});document.getElementById('scr-'+s).classList.add('on');btn.classList.add('on');curTab=s;document.getElementById('content').scrollTop=0;if(s==='dash')renderDash();if(s==='mem'){openView('v-ml');rMem();}if(s==='act'){openView('v-al');rAct();}if(s==='alert'){openView('v-aletl');rAlert();}if(s==='res'){openView('v-rl');rRes();}if(s==='sync')rSync();if(s==='admin')rAdmin();}
+function openView(vid){var scr=document.getElementById('scr-'+curTab);if(!scr)return;scr.querySelectorAll('.vw').forEach(function(v){v.classList.remove('on');});var v=document.getElementById(vid);if(v){v.classList.add('on');document.getElementById('content').scrollTop=0;}}
+function goTabById(s){var btn=document.querySelector('[data-s="'+s+'"]');if(btn)goTab(btn);}
+var NIVS=[{id:'N1',lbl:'Coord. Nationale',col:'#C9A84C',c2:'rgba(201,168,76,',ico:'⭐'},{id:'N3',lbl:'Point Focal',col:'#E67E22',c2:'rgba(230,126,34,',ico:'📍'}];
+function gn(id){for(var i=0;i<NIVS.length;i++)if(NIVS[i].id===id)return NIVS[i];return NIVS[1];}
+var selMN='N3',selAN='N3';
+function buildNS(cid,sel,key,allowed){var c=document.getElementById(cid);if(!c)return;var list=allowed?NIVS.filter(function(n){return allowed.indexOf(n.id)>=0;}):NIVS;c.innerHTML=list.map(function(n){var a=sel===n.id;return'<div class="niv-opt" id="'+cid+'-'+n.id+'" onclick="pickN(\''+cid+'\',\''+n.id+'\',\''+key+'\')" style="border-color:'+(a?n.col:n.c2+'0.18)')+';background:'+(a?n.c2+'0.12)':'transparent')+'"><div style="font-size:16px;">'+n.ico+'</div><div style="font-size:9px;color:'+(a?n.col:'#7A7A7A')+';margin-top:2px;font-weight:'+(a?700:400)+';">'+n.lbl+'</div></div>';}).join('');}
+function updMFields(){
+  var cfg={
+    N1:{loc:false,ar:false,vl:false,hint:'⭐ Coordination Nationale — Champs requis : Prénom, Nom, Téléphone'},
+    N3:{loc:true,ar:true,vl:false,hint:'📍 Point Focal — Champs requis : Prénom, Nom, Téléphone, Département, Commune, Arrondissement'}
+  }[selMN]||{loc:true,ar:false,vl:false,hint:''};
+  var nh=document.getElementById('m-niv-hint');if(nh)nh.textContent=cfg.hint;
+  var ls=document.getElementById('m-loc-sec');if(ls)ls.style.display=cfg.loc?'':'none';
+  var as=document.getElementById('m-ar-sec');if(as)as.style.display=cfg.ar?'':'none';
+  var vs=document.getElementById('m-vl-sec');if(vs)vs.style.display=cfg.vl?'':'none';
+  if(!cfg.loc){sv('m-dp','');sv('m-cm','');}
+  if(!cfg.ar)sv('m-ar','');
+  if(!cfg.vl)sv('m-vl','');
+}
+function pickN(cid,id,key){NIVS.forEach(function(n){var el=document.getElementById(cid+'-'+n.id);if(!el)return;var a=n.id===id,c=n;el.style.borderColor=a?c.col:c.c2+'0.18)';el.style.background=a?c.c2+'0.12)':'transparent';el.querySelector('div:last-child').style.color=a?c.col:'#7A7A7A';el.querySelector('div:last-child').style.fontWeight=a?'700':'400';});if(key==='m'){selMN=id;updMFields();}if(key==='a')selAN=id;}
+var mFil='ALL',aFil='ALL',alFil='ALL';
+function bChips(cid,cur,fn,all,allowed){var c=document.getElementById(cid);if(!c)return;var list=allowed?NIVS.filter(function(n){return allowed.indexOf(n.id)>=0;}):NIVS;var opts=[{id:'ALL',lbl:all||'Tous',col:'#7A7A7A',ico:'•'}].concat(list.map(function(n){return{id:n.id,lbl:n.lbl,col:n.col,ico:n.ico};}));c.innerHTML=opts.map(function(n){var a=cur===n.id;return'<button class="chip" onclick="'+fn+'(\''+n.id+'\')" style="background:'+(a?n.col+'22':'transparent')+';border-color:'+(a?n.col:n.col+'44')+';color:'+(a?n.col:'#7A7A7A')+';font-weight:'+(a?700:400)+';">'+n.ico+' '+n.lbl+'</button>';}).join('');}
+function bAlChips(cid,cur){var c=document.getElementById(cid);if(!c)return;var opts=[{id:'ALL',lbl:'Toutes',col:'#7A7A7A'},{id:'urg',lbl:'Urgent',col:'#E74C3C'},{id:'imp',lbl:'Important',col:'#E67E22'},{id:'inf',lbl:'Info',col:'#2980B9'},{id:'res',lbl:'Résolu',col:'#0B4EA2'}];c.innerHTML=opts.map(function(n){var a=cur===n.id;return'<button class="chip" onclick="setAlF(\''+n.id+'\')" style="background:'+(a?n.col+'22':'transparent')+';border-color:'+(a?n.col:n.col+'44')+';color:'+(a?n.col:'#7A7A7A')+';font-weight:'+(a?700:400)+';">'+n.lbl+'</button>';}).join('');}
+function setMF(f){mFil=f;bChips('mem-chips',f,'setMF');rMem();}
+function setAF(f){aFil=f;bChips('act-chips',f,'setAF','Toutes');rAct();}
+function setAlF(f){alFil=f;bAlChips('alert-chips',f);rAlert();}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function genCode(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r='';for(var i=0;i<6;i++)r+=c[Math.floor(Math.random()*c.length)];return r.slice(0,3)+'-'+r.slice(3);}
+var _lastCode='',_lastCodeName='';
+function copyMemberCode(){if(!_lastCode)return;navigator.clipboard&&navigator.clipboard.writeText(_lastCode).then(function(){toast('Code copié ✅','#25D366');}).catch(function(){fallbackCopy(_lastCode);});}
+function closeCodeModal(){document.getElementById('code-modal-overlay').classList.remove('on');}
+function showCodeModal(name,code){_lastCode=code;_lastCodeName=name;document.getElementById('cm-name').textContent=name;document.getElementById('cm-code').textContent=code;document.getElementById('code-modal-overlay').classList.add('on');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fd(ts){return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'2-digit'});}
+function fdt(ts){return new Date(ts).toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function v(id){return(document.getElementById(id)||{}).value||'';}
+function sv(id,val){var e=document.getElementById(id);if(e)e.value=val||'';}
+function renderAll(){renderDash();rMem();rAct();rAlert();rRes();rSync();updDL();updAlBadge();}
+function renderDash(){var m=DATA.membres,a=DATA.activites,r=DATA.resultats,al=DATA.alertes;var tg=[300,26475],ids=['N1','N3'];var cols=['#C9A84C','#E67E22'],icos=['⭐','📍'];var lbls=['Coord. Nationale','Points Focaux'];document.getElementById('d-stats').innerHTML=ids.map(function(id,i){var val=m.filter(function(x){return x.niv===id;}).length,p=Math.min(100,Math.round(val/tg[i]*100));return'<div class="card" style="border:1px solid '+cols[i]+'33;padding:10px 11px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><span style="font-size:18px;">'+icos[i]+'</span><span style="font-size:17px;font-weight:900;color:'+cols[i]+';">'+val.toLocaleString()+'</span></div><div style="font-size:9px;color:var(--cream2);">'+lbls[i]+'</div><div class="pbar"><div class="pbar-f" style="width:'+p+'%;background:'+cols[i]+';"></div></div><div style="font-size:8px;color:var(--gray);margin-top:2px;">'+p+'% / '+tg[i].toLocaleString()+'</div></div>';}).join('');var myNiv=SES?SES.niv:'';var visAl=al.filter(function(a){if(myNiv==='ADM')return true;var d=a.dest||'ALL';return d==='ALL'||(d==='N1'&&myNiv==='N1');});var urg=visAl.filter(function(x){return x.niv==='urg';});document.getElementById('d-alertes-sum').innerHTML=urg.length?'<div class="card" style="border:2px solid #E74C3C;margin-bottom:8px;cursor:pointer;" onclick="goTabById(\'alert\')"><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">🚨</span><div><div style="font-size:13px;font-weight:800;color:#E74C3C;">'+urg.length+' ALERTE'+(urg.length>1?'S':'')+' URGENTE'+(urg.length>1?'S':'')+'</div><div style="font-size:11px;color:var(--cream2);margin-top:1px;">'+esc(urg[0].msg).slice(0,55)+(urg[0].msg.length>55?'…':'')+'</div></div></div></div>':'';var re=document.getElementById('d-res');if(r.length>0){var tv=r.reduce(function(s,x){return s+Number(x.wx||0);},0),tt=r.reduce(function(s,x){return s+Number(x.vt||0);},0),p=tt>0?((tv/tt)*100).toFixed(1):'—';re.innerHTML='<div class="card" style="border:2px solid rgba(201,168,76,.45);margin-bottom:8px;"><span class="slbl">🗳 RÉSULTATS ÉLECTORAUX</span><div class="consol-g"><div class="c-cell" style="background:rgba(201,168,76,.1)"><div class="c-val" style="color:#C9A84C">'+tv.toLocaleString()+'</div><div class="c-lbl">Voix</div></div><div class="c-cell" style="background:rgba(11,78,162,.1)"><div class="c-val" style="color:#0B4EA2">'+p+'%</div><div class="c-lbl">Score</div></div><div class="c-cell" style="background:rgba(46,134,171,.1)"><div class="c-val" style="color:#2980B9">'+r.length+'</div><div class="c-lbl">Bureaux</div></div></div>'+(tt>0?'<div class="pbar" style="height:5px;border-radius:2px;"><div class="pbar-f" style="width:'+Math.min(100,p)+'%;background:linear-gradient(to right,#C9A84C,#0B4EA2);height:100%;border-radius:2px;"></div></div>':'')+'</div>';}else re.innerHTML='';var rec=[].concat(a).sort(function(x,y){return y.ts-x.ts;}).slice(0,5);var dl=document.getElementById('d-act');if(!rec.length){dl.innerHTML='<div class="empty" style="padding:14px 0"><div class="empty-i">📋</div><div class="empty-t">Aucune activité</div></div>';return;}dl.innerHTML=rec.map(function(act,i){var n=gn(act.niv);return'<div style="display:flex;gap:7px;margin-bottom:'+(i<rec.length-1?7:0)+'px;padding-bottom:'+(i<rec.length-1?7:0)+'px;border-bottom:'+(i<rec.length-1?'1px solid rgba(255,255,255,.05)':'none')+';align-items:flex-start;"><div style="width:6px;height:6px;border-radius:50%;background:'+n.col+';margin-top:4px;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:var(--cream);">'+esc(act.tp)+'</div><div style="font-size:10px;color:'+n.col+';">'+esc(act.ac)+' · '+n.lbl+'</div><div style="font-size:10px;color:var(--gray);">'+esc(act.cm)+(act.dp?', '+esc(act.dp):'')+' · '+fd(act.ts)+'</div></div></div>';}).join('');}
+function rMem(){
+  var acc=getAccess();
+  var q=(v('mem-s')||'').toLowerCase();
+  var base=DATA.membres.filter(function(m){return acc.filter?acc.filter(m):true;});
+  var lst=base.filter(function(m){return(mFil==='ALL'||m.niv===mFil)&&(!q||((m.pn||'')+(m.nm||'')+(m.cm||'')+(m.vl||'')+(m.dp||'')+(m.tl||'')).toLowerCase().includes(q));});
+  var lbl=document.getElementById('mem-lbl');if(lbl)lbl.textContent='MEMBRES ('+base.length+')';
+  bChips('mem-chips',mFil,'setMF',null,acc.nivs);
+  var sb=document.getElementById('mem-scope');
+  if(sb)sb.innerHTML=acc.scope?'<div style="background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.28);border-radius:7px;padding:6px 10px;font-size:10px;color:var(--gold);margin-bottom:8px;">🔒 Périmètre : <strong>'+esc(acc.scope)+'</strong></div>':'';
+  var el=document.getElementById('mem-list');if(!el)return;
+  if(!lst.length){el.innerHTML='<div class="empty"><div class="empty-i">👥</div><div class="empty-t">Aucun membre dans votre périmètre</div></div>';return;}
+  var shown=lst.slice(0,100);
+  el.innerHTML=shown.map(function(m){var n=gn(m.niv);return'<div class="card" style="border:1px solid '+n.col+'28;display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;" onclick="showMD(\''+m.id+'\')"><div style="width:37px;height:37px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">'+n.ico+'</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:9px;color:'+n.col+';margin-top:1px;">'+n.lbl+(m.tl?' · 📞 '+esc(m.tl):'')+'</div><div style="font-size:10px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(m.cm)+(m.dp?', '+esc(m.dp):'')+(m.vl?' · '+esc(m.vl):'')+'</div></div><span style="color:var(--gray);font-size:15px;">›</span></div>';}).join('');
+  if(lst.length>100)el.innerHTML+='<div style="text-align:center;padding:8px;font-size:11px;color:var(--gray);">+'+(lst.length-100)+' · Affinez la recherche</div>';
+}
+function showMD(id){var m=DATA.membres.filter(function(x){return x.id===id;})[0];if(!m)return;var n=gn(m.niv);var codeRow=m.cd?[['🔑 Code connexion',m.cd]]:[];var rows=[['Département',m.dp],['Commune',m.cm],['Arrondissement',m.ar],['Village/Quartier',m.vl],['Téléphone',m.tl]].concat(codeRow).concat([['Observations',m.ob],['Enregistré le',fd(m.ts)]]);var editBtn=SES&&SES.niv==='ADM'?'<button class="btn-gold" style="margin-bottom:6px;" onclick="editMem(\''+id+'\')">✏️ Modifier ce membre</button>':'';document.getElementById('mem-det').innerHTML='<div class="card" style="border:1px solid '+n.col+'44;"><div style="display:flex;align-items:center;gap:11px;margin-bottom:11px;"><div style="width:48px;height:48px;border-radius:50%;background:'+n.c2+'0.13);border:2px solid '+n.col+';display:flex;align-items:center;justify-content:center;font-size:20px;">'+n.ico+'</div><div><div style="font-size:15px;font-weight:900;color:var(--cream);">'+esc(m.pn)+' '+esc(m.nm)+'</div><div style="font-size:11px;color:'+n.col+';margin-top:2px;">'+n.lbl+'</div></div></div>'+rows.map(function(r){return'<div class="det-row"><span style="font-size:11px;color:var(--gray);">'+r[0]+'</span><span style="font-size:11px;color:var(--cream);font-weight:600;text-align:right;max-width:60%;">'+esc(r[1]||'—')+'</span></div>';}).join('')+'</div>'+editBtn+'<button class="btn-red" onclick="delMem(\''+id+'\')">🗑 Supprimer ce membre</button>';openView('v-md');}
+function delMem(id){if(!confirm('Supprimer ce membre ?'))return;DATA.membres=DATA.membres.filter(function(m){return m.id!==id;});saveM();openView('v-ml');rMem();renderDash();updDL();toast('Supprimé','#555');}
+function initMF(){
+  ['m-pn','m-nm','m-tl','m-ar','m-vl','m-ob'].forEach(function(id){sv(id,'');});
+  sv('m-dp','');sv('m-cm','');
+  var acc=getAccess();
+  /* niveau par défaut = le plus bas autorisé */
+  selMN=acc.nivs[acc.nivs.length-1];
+  buildNS('m-niv',selMN,'m',acc.nivs);
+  updMFields();
+  /* pré-remplir localité si connue via login téléphone */
+  if(SES&&SES.dp){sv('m-dp',SES.dp);updCommunes('m-dp','m-cm');
+    if(SES.cm){sv('m-cm',SES.cm);}
+    if(SES.ar){sv('m-ar',SES.ar);}
+    if(SES.vl){sv('m-vl',SES.vl);}
+  }
+  var cm=document.getElementById('m-cm');
+  if(cm&&!(SES&&SES.cm))cm.innerHTML='<option value="">Commune * (choisir département d\'abord)</option>';
+}
+function saveMem(){
+  var acc=getAccess();
+  if(acc.nivs.indexOf(selMN)<0){toast('Vous ne pouvez pas enregistrer ce niveau','#E74C3C');return;}
+  var pn=v('m-pn').trim(),nm=v('m-nm').trim(),tl=v('m-tl').trim(),dp=v('m-dp'),cm=v('m-cm').trim(),ar=v('m-ar').trim(),vl=v('m-vl').trim();
+  var ok={N1:pn&&nm&&tl,N3:pn&&nm&&tl&&dp&&cm&&ar}[selMN];
+  var msg={N1:'Requis : Prénom, Nom, Téléphone',N3:'Requis : Prénom, Nom, Téléphone, Département, Commune, Arrondissement'}[selMN];
+  if(!ok){toast(msg,'#E74C3C');return;}
+  /* vérifier la localité selon les restrictions */
+  var locErr=null;
+  if(acc.filter&&SES.cm){
+    if(selMN==='N3'&&cm&&SES.cm&&cm!==SES.cm)locErr='Ce Point Focal doit être de la commune : '+SES.cm;
+    if(selMN==='N3'&&ar&&SES.ar&&ar!==SES.ar)locErr='Ce Point Focal doit être de l\'arrondissement : '+SES.ar;
+    
+  }
+  if(locErr){toast(locErr,'#E74C3C');return;}
+  var cd=genCode();var m={id:uid(),ts:Date.now(),pn:pn,nm:nm,tl:tl,niv:selMN,dp:dp,cm:cm,ar:ar,vl:vl,ob:v('m-ob').trim(),par:SES?SES.niv:'',cd:cd};
+  DATA.membres.push(m);saveM();initMF();openView('v-ml');rMem();renderDash();updDL();showCodeModal(pn+' '+nm,cd);
+}
+function rAct(){var acc=getAccess();bChips('act-chips',aFil,'setAF','Toutes',acc.nivs);var base=DATA.activites.filter(function(a){if(!acc.filter)return true;if(acc.filter({niv:a.niv,cm:a.cm,ar:'',vl:''}))return true;return false;});var lbl=document.getElementById('act-lbl');if(lbl)lbl.textContent='ACTIVITÉS ('+base.length+')';var lst=[].concat(DATA.activites).filter(function(a){return aFil==='ALL'||a.niv===aFil;}).filter(function(a){return acc.filter?acc.filter({niv:a.niv,cm:a.cm||'',ar:a.ar||'',vl:a.vl||''}):true;}).sort(function(a,b){return b.ts-a.ts;}).slice(0,100);var el=document.getElementById('act-list');if(!el)return;if(!lst.length){el.innerHTML='<div class="empty"><div class="empty-i">📋</div><div class="empty-t">Aucune activité</div></div>';return;}el.innerHTML=lst.map(function(a){var n=gn(a.niv);return'<div class="card" style="border:1px solid '+n.col+'28;"><div style="display:flex;gap:7px;align-items:flex-start;"><div style="width:6px;height:6px;border-radius:50%;background:'+n.col+';margin-top:4px;flex-shrink:0;"></div><div style="flex:1;"><div style="display:flex;justify-content:space-between;"><span style="font-size:12px;font-weight:700;color:var(--cream);">'+esc(a.tp)+'</span><span style="font-size:10px;color:var(--gray);flex-shrink:0;margin-left:5px;">'+fd(a.ts)+'</span></div><div style="font-size:10px;color:'+n.col+';margin-top:1px;">'+esc(a.ac)+' · '+n.lbl+'</div><div style="font-size:10px;color:var(--gray);">'+esc(a.cm)+(a.dp?', '+esc(a.dp):'')+( a.nb?' · '+a.nb+' pers.':'')+'</div>'+(a.ds?'<div style="font-size:10px;color:var(--cream2);font-style:italic;margin-top:2px;">'+esc(a.ds)+'</div>':'')+'</div><button class="btn-del" onclick="delAct(\''+a.id+'\')">✕</button></div></div>';}).join('');}
+function delAct(id){DATA.activites=DATA.activites.filter(function(a){return a.id!==id;});saveA();rAct();renderDash();toast('Supprimé','#555');}
+function initAF(){['a-ac','a-ds','a-nb'].forEach(function(id){sv(id,'');});sv('a-tp','');sv('a-dp','');sv('a-cm','');sv('a-dt',new Date().toISOString().slice(0,10));selAN='N3';buildNS('a-niv','N3','a');var cm=document.getElementById('a-cm');if(cm)cm.innerHTML='<option value="">Commune (choisir département d\'abord)</option>';}
+function saveAct(){var ac=v('a-ac').trim(),tp=v('a-tp'),cm=v('a-cm').trim();if(!ac||!tp||!cm){toast('Remplissez : Acteur, Type, Commune','#E74C3C');return;}var a={id:uid(),ts:Date.now(),ac:ac,niv:selAN,tp:tp,ds:v('a-ds').trim(),dt:v('a-dt'),dp:v('a-dp'),cm:cm,nb:v('a-nb'),par:SES?SES.niv:''};DATA.activites.push(a);saveA();initAF();openView('v-al');rAct();renderDash();toast('Activité enregistrée ✅','#0B4EA2');}
+var selAL='urg';var selDest='N1';
+var AL={urg:{col:'#E74C3C',lbl:'URGENT',ico:'🚨'},imp:{col:'#E67E22',lbl:'IMPORTANT',ico:'⚠️'},inf:{col:'#2980B9',lbl:'INFORMATION',ico:'ℹ️'},res:{col:'#0B4EA2',lbl:'RÉSOLU',ico:'✅'}};
+function pickDest(d){selDest=d;['N1','ALL'].forEach(function(k){var el=document.getElementById('al-dest-'+k);if(!el)return;var a=k===d;el.style.borderColor=a?(k==='N1'?'#C9A84C':'#0B4EA2'):(k==='N1'?'rgba(201,168,76,.25)':'rgba(11,78,162,.25)');el.style.background=a?(k==='N1'?'rgba(201,168,76,.15)':'rgba(11,78,162,.18)'):'transparent';el.querySelector('div:last-child').style.color=a?(k==='N1'?'#C9A84C':'#5B9BF0'):'#7A7A7A';el.querySelector('div:last-child').style.fontWeight=a?'700':'400';});}
+function pickAL(niv){selAL=niv;Object.keys(AL).forEach(function(k){var el=document.getElementById('al-'+k);if(!el)return;var a=k===niv,c=AL[k];el.style.borderColor=a?c.col:'rgba(255,255,255,.1)';el.style.background=a?c.col+'22':'transparent';el.querySelector('div:last-child').style.color=a?c.col:'#7A7A7A';el.querySelector('div:last-child').style.fontWeight=a?'700':'400';});}
+function rAlert(){
+  bAlChips('alert-chips',alFil);
+  var myNiv=SES?SES.niv:'';
+  var visible=DATA.alertes.filter(function(a){
+    if(myNiv==='ADM')return true;
+    var d=a.dest||'ALL';
+    return d==='ALL'||(d==='N1'&&myNiv==='N1');
+  });
+  var lst=visible.filter(function(a){return alFil==='ALL'||a.niv===alFil;}).sort(function(a,b){return b.ts-a.ts;});
+  var lbl=document.getElementById('alert-lbl');if(lbl)lbl.textContent='ALERTES ('+lst.length+')';
+  var el=document.getElementById('alert-list');if(!el)return;
+  if(!lst.length){el.innerHTML='<div class="empty"><div class="empty-i">✅</div><div class="empty-t">Aucune alerte</div></div>';return;}
+  var html='';
+  for(var i=0;i<lst.length;i++){
+    var al=lst[i];
+    var c=AL[al.niv]||AL.inf;
+    var d=al.dest||'ALL';
+    var destBadge=al.saisiPar==='ADM'?('<span class="al-dest '+(d==='N1'?'n1':'all')+'">'+(d==='N1'?'⭐ COORDINATION N1':'📡 TOUS LES MEMBRES')+'</span><br>'):'';
+    var delBtn=myNiv==='ADM'?('<button class="btn-del" onclick="delAlert(\''+al.id+'\')">✕</button>'):'';
+    html+='<div class="alerte '+al.niv+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div style="flex:1;">'+destBadge+'<div class="al-type" style="color:'+c.col+';">'+c.ico+' '+c.lbl+'</div><div class="al-msg">'+esc(al.msg)+'</div><div class="al-meta">'+esc(al.par)+(al.cm?' · '+esc(al.cm):'')+(al.dp?' ('+esc(al.dp)+')':'')+' · '+fdt(al.ts)+'</div></div>'+delBtn+'</div></div>';
+  }
+  el.innerHTML=html;
+}
+function updAlBadge(){var myNiv=SES?SES.niv:'';var visible=DATA.alertes.filter(function(a){if(myNiv==='ADM')return true;var d=a.dest||'ALL';return d==='ALL'||(d==='N1'&&myNiv==='N1');});var urg=visible.filter(function(a){return a.niv==='urg';}).length;var b=document.getElementById('alert-badge');if(b){b.textContent=urg;b.className='nav-badge'+(urg>0?' show':'');}}
+function delAlert(id){DATA.alertes=DATA.alertes.filter(function(a){return a.id!==id;});saveAL();rAlert();renderDash();updAlBadge();toast('Alerte supprimée','#555');}
+function initALForm(){var ds=document.getElementById('al-dest-sec');if(ds)ds.style.display=SES&&SES.niv==='ADM'?'block':'none';selDest='N1';pickDest('N1');}
+function saveAlert(){var msg=v('al-msg').trim();if(!msg){toast('Décrivez la situation','#E74C3C');return;}var dest=SES&&SES.niv==='ADM'?selDest:'ALL';var al={id:uid(),ts:Date.now(),niv:selAL,msg:msg,par:v('al-par').trim(),dp:v('al-dp'),cm:v('al-cm'),saisiPar:SES?SES.niv:'',dest:dest};DATA.alertes.push(al);saveAL();sv('al-msg','');sv('al-par','');sv('al-dp','');sv('al-cm','');openView('v-aletl');rAlert();renderDash();updAlBadge();var txt=selAL==='urg'?'🚨 Alerte urgente':'Alerte';txt+=(dest==='N1'?' → Coordination N1 seulement':' → Tous les membres');toast(txt,selAL==='urg'?'#E74C3C':'#0B4EA2');}
+function updScore(){var wx=Number(v('r-wx')),vt=Number(v('r-vt')),b=document.getElementById('s-box');if(wx>0&&vt>0){document.getElementById('s-val').textContent=((wx/vt)*100).toFixed(1)+'%';b.style.display='block';}else b.style.display='none';}
+function rRes(){var r=DATA.resultats;var lbl=document.getElementById('res-lbl');if(lbl)lbl.textContent='RÉSULTATS ('+(r.length)+' bureau'+(r.length>1?'x':'')+ ')';var co=document.getElementById('res-consol');if(r.length>0){var tv=r.reduce(function(s,x){return s+Number(x.wx||0);},0),tt=r.reduce(function(s,x){return s+Number(x.vt||0);},0),p=tt>0?((tv/tt)*100).toFixed(1):'—';co.innerHTML='<div class="card" style="border:2px solid var(--gold);margin-bottom:8px;"><span class="slbl">🏆 CONSOLIDATION NATIONALE</span><div class="consol-g"><div class="c-cell" style="background:rgba(201,168,76,.1)"><div class="c-val" style="color:#C9A84C">'+tv.toLocaleString()+'</div><div class="c-lbl">Voix WADAGNI</div></div><div class="c-cell" style="background:rgba(11,78,162,.1)"><div class="c-val" style="color:#0B4EA2">'+p+'%</div><div class="c-lbl">Score</div></div><div class="c-cell" style="background:rgba(46,134,171,.1)"><div class="c-val" style="color:#2980B9">'+r.length+'</div><div class="c-lbl">Bureaux</div></div></div>'+(tt>0?'<div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:10px;color:var(--gray)">Score WADAGNI</span><span style="font-size:10px;color:#C9A84C;font-weight:700">'+p+'%</span></div><div class="pbar" style="height:5px;border-radius:2px;"><div class="pbar-f" style="width:'+Math.min(100,p)+'%;background:linear-gradient(to right,#C9A84C,#0B4EA2);height:100%;border-radius:2px;"></div></div>':'')+'</div>';}else co.innerHTML='';var el=document.getElementById('res-list');if(!el)return;if(!r.length){el.innerHTML='<div class="empty"><div class="empty-i">🗳</div><div class="empty-t">Aucun résultat saisi</div></div>';return;}el.innerHTML=[].concat(r).sort(function(a,b){return b.ts-a.ts;}).map(function(x){var lp=Number(x.vt)>0?((Number(x.wx)/Number(x.vt))*100).toFixed(1):null;return'<div class="card" style="border:1px solid rgba(201,168,76,.26);"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--cream);">Bureau : '+esc(x.bv)+'</div><div style="font-size:10px;color:var(--gray);margin-top:1px;">'+ [x.cm,x.ar,x.dp].filter(Boolean).map(esc).join(', ')+'</div>'+(x.co?'<div style="font-size:10px;color:var(--n2);margin-top:1px;">🏛 '+esc(x.co)+'</div>':'')+(x.ob?'<div style="font-size:10px;color:var(--cream2);font-style:italic;margin-top:1px;">'+esc(x.ob)+'</div>':'')+'<div style="font-size:9px;color:var(--gray);margin-top:1px;">'+fd(x.ts)+'</div></div><div style="text-align:right;flex-shrink:0;margin-left:8px;"><div style="font-size:18px;font-weight:900;color:var(--gold);">'+Number(x.wx).toLocaleString()+'</div>'+(lp?'<div style="font-size:11px;font-weight:700;color:var(--green2);">'+lp+'%</div>':'')+(x.vt?'<div style="font-size:9px;color:var(--gray);">'+Number(x.vt).toLocaleString()+' vot.</div>':'')+'<button class="btn-del" onclick="delRes(\''+x.id+'\')">✕</button></div></div></div>';}).join('');}
+function delRes(id){DATA.resultats=DATA.resultats.filter(function(r){return r.id!==id;});saveR();rRes();renderDash();toast('Supprimé','#555');}
+function saveRes(){var cm=v('r-cm').trim(),bv=v('r-bv').trim(),wx=v('r-wx');if(!cm||!bv||!wx){toast('Remplissez : Commune, Bureau, Voix WADAGNI','#E74C3C');return;}var r={id:uid(),ts:Date.now(),dp:v('r-dp'),cm:cm,ar:v('r-ar').trim(),bv:bv,vt:v('r-vt'),wx:wx,co:v('r-co').trim(),ob:v('r-ob').trim(),par:SES?SES.niv:''};DATA.resultats.push(r);saveR();['r-ar','r-bv','r-vt','r-wx','r-co','r-ob'].forEach(function(id){sv(id,'');});sv('r-dp','');sv('r-cm','');document.getElementById('s-box').style.display='none';openView('v-rl');rRes();renderDash();toast('Résultat soumis ✅','#0B4EA2');}
+function rSync(){var el=document.getElementById('sync-stats');if(!el)return;var items=[['👥',DATA.membres.length,'Membres'],['📋',DATA.activites.length,'Activités'],['🚨',DATA.alertes.length,'Alertes'],['🗳',DATA.resultats.length,'Résultats']];el.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">'+items.map(function(x){return'<div style="text-align:center;background:rgba(255,255,255,.04);border-radius:7px;padding:8px 3px;"><div style="font-size:16px;">'+x[0]+'</div><div style="font-size:16px;font-weight:900;color:var(--gold);">'+x[1]+'</div><div style="font-size:9px;color:var(--gray);margin-top:1px;">'+x[2]+'</div></div>';}).join('')+'</div>';}
+function doExport(){var d={v:4,at:new Date().toISOString(),by:SES?SES.niv:'',membres:DATA.membres,activites:DATA.activites,resultats:DATA.resultats,alertes:DATA.alertes};var blob=new Blob([JSON.stringify(d)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='WADAGNI_'+(SES?SES.niv:'DATA')+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);toast('Données exportées — envoyez le fichier par WhatsApp','#0B4EA2');}
+function doImport(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var d=JSON.parse(ev.target.result);var em=new Set(DATA.membres.map(function(x){return x.id;})),ea=new Set(DATA.activites.map(function(x){return x.id;})),er=new Set(DATA.resultats.map(function(x){return x.id;})),eal=new Set(DATA.alertes.map(function(x){return x.id;}));var nm=0,na=0,nr=0,nal=0;(d.membres||[]).forEach(function(x){if(!em.has(x.id)){DATA.membres.push(x);nm++;}});(d.activites||[]).forEach(function(x){if(!ea.has(x.id)){DATA.activites.push(x);na++;}});(d.resultats||[]).forEach(function(x){if(!er.has(x.id)){DATA.resultats.push(x);nr++;}});(d.alertes||[]).forEach(function(x){if(!eal.has(x.id)){DATA.alertes.push(x);nal++;}});saveM();saveA();saveR();saveAL();renderAll();toast('+'+nm+' membres · +'+na+' activités · +'+nr+' résultats · +'+nal+' alertes','#0B4EA2');}catch(err){toast('Fichier invalide','#E74C3C');}};reader.readAsText(file);e.target.value='';}
+function doReset(){if(!confirm('⚠️ Supprimer TOUTES les données ?\n\nExportez d\'abord si nécessaire !'))return;DATA={membres:[],activites:[],resultats:[],alertes:[]};saveM();saveA();saveR();saveAL();renderAll();toast('Base réinitialisée','#555');}
+function doPrint(){var now=new Date().toLocaleString('fr-FR'),jours=Math.max(0,Math.ceil((new Date('2026-04-12')-new Date())/86400000));var m=DATA.membres,a=DATA.activites,r=DATA.resultats,al=DATA.alertes;var tv=r.reduce(function(s,x){return s+Number(x.wx||0);},0),tt=r.reduce(function(s,x){return s+Number(x.vt||0);},0),score=tt>0?((tv/tt)*100).toFixed(1):'—',urg=al.filter(function(x){return x.niv==='urg';}).length;var h='<html><head><meta charset="UTF-8"><title>Rapport WADAGNI 2026</title><style>body{font-family:Arial,sans-serif;font-size:11px;color:#111;margin:0;padding:18px;}h1{color:#0B4EA2;font-size:17px;margin-bottom:2px;}h2{color:#0B4EA2;font-size:12px;border-bottom:2px solid #C9A84C;padding-bottom:3px;margin:14px 0 7px;}.hdr{display:flex;justify-content:space-between;border-bottom:3px solid #0B4EA2;padding-bottom:9px;margin-bottom:12px;}.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;margin-bottom:10px;}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:10px;}.s{background:#f5f5f5;border:1px solid #ddd;border-radius:5px;padding:7px 9px;text-align:center;}.sv{font-size:18px;font-weight:900;color:#0B4EA2;}.sl{font-size:9px;color:#666;margin-top:2px;}table{width:100%;border-collapse:collapse;margin-bottom:9px;font-size:10px;}th{background:#0B4EA2;color:#fff;padding:4px 6px;text-align:left;}td{padding:3px 6px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#f9f9f9;}.urg{background:#fdf0f0;border-left:3px solid #E74C3C;padding:5px 9px;margin-bottom:4px;font-size:10px;}.imp{background:#fef6ed;border-left:3px solid #E67E22;padding:5px 9px;margin-bottom:4px;font-size:10px;}.inf{background:#eaf3fb;border-left:3px solid #2980B9;padding:5px 9px;margin-bottom:4px;font-size:10px;}.res{background:#edf8f2;border-left:3px solid #0B4EA2;padding:5px 9px;margin-bottom:4px;font-size:10px;}</style></head><body>';h+='<div class="hdr"><div><h1>🇧🇯 WADAGNI 2026 — Rapport de Coordination</h1><div style="font-size:10px;color:#555;margin-top:3px;">Généré le '+now+' · '+jours+' jours avant le 12 Avril 2026</div></div><div style="text-align:right;"><div style="font-size:20px;font-weight:900;color:#C9A84C;">'+jours+'</div><div style="font-size:9px;color:#888;">jours restants</div></div></div>';h+='<h2>📊 SYNTHÈSE</h2><div class="g4"><div class="s"><div class="sv">'+m.length+'</div><div class="sl">Membres</div></div><div class="s"><div class="sv">'+a.length+'</div><div class="sl">Activités</div></div><div class="s"><div class="sv" style="color:'+(urg>0?'#E74C3C':'#0B4EA2')+'">'+al.length+'</div><div class="sl">Alertes ('+urg+' urg.)</div></div><div class="s"><div class="sv">'+r.length+'</div><div class="sl">Bureaux</div></div></div>';if(r.length>0){h+='<h2>🗳 RÉSULTATS</h2><div class="g3"><div class="s"><div class="sv" style="color:#C9A84C">'+tv.toLocaleString()+'</div><div class="sl">Voix WADAGNI</div></div><div class="s"><div class="sv" style="color:#0B4EA2">'+score+'%</div><div class="sl">Score</div></div><div class="s"><div class="sv">'+r.length+'</div><div class="sl">Bureaux remontés</div></div></div>';h+='<table><tr><th>Bureau</th><th>Commune</th><th>Département</th><th>Voix WADAGNI</th><th>Votants</th><th>Score</th></tr>';r.forEach(function(x){var sc=Number(x.vt)>0?((Number(x.wx)/Number(x.vt))*100).toFixed(1)+'%':'—';h+='<tr><td>'+esc(x.bv)+'</td><td>'+esc(x.cm)+'</td><td>'+esc(x.dp)+'</td><td><strong>'+Number(x.wx).toLocaleString()+'</strong></td><td>'+esc(x.vt)+'</td><td><strong>'+sc+'</strong></td></tr>';});h+='</table>';}if(al.length>0){h+='<h2>🚨 ALERTES</h2>';[].concat(al).sort(function(a,b){return({urg:0,imp:1,inf:2,res:3}[a.niv]||2)-({urg:0,imp:1,inf:2,res:3}[b.niv]||2);}).forEach(function(x){var c=AL[x.niv]||AL.inf;h+='<div class="'+x.niv+'"><strong>'+c.ico+' '+c.lbl+'</strong> — '+esc(x.msg)+'<br><span style="color:#888;">'+esc(x.par)+(x.cm?' · '+esc(x.cm):'')+(x.dp?' ('+esc(x.dp)+')':'')+' · '+fdt(x.ts)+'</span></div>';});}h+='<h2>👥 MEMBRES PAR NIVEAU</h2>';['N1','N3'].forEach(function(niv){var lst=m.filter(function(x){return x.niv===niv;});if(!lst.length)return;var n=gn(niv);h+='<div style="margin-bottom:5px;font-weight:700;color:#0B4EA2;">'+n.ico+' '+n.lbl+' ('+lst.length+')</div><table><tr><th>Prénom Nom</th><th>Téléphone</th><th>Commune</th><th>Département</th></tr>';lst.forEach(function(x){h+='<tr><td>'+esc(x.pn)+' '+esc(x.nm)+'</td><td>'+esc(x.tl||'—')+'</td><td>'+esc(x.cm)+'</td><td>'+esc(x.dp)+'</td></tr>';});h+='</table>';});h+='<h2>📋 ACTIVITÉS (50 dernières)</h2><table><tr><th>Date</th><th>Type</th><th>Acteur</th><th>Commune</th><th>Personnes</th></tr>';[].concat(a).sort(function(x,y){return y.ts-x.ts;}).slice(0,50).forEach(function(x){h+='<tr><td>'+fd(x.ts)+'</td><td>'+esc(x.tp)+'</td><td>'+esc(x.ac)+'</td><td>'+esc(x.cm)+(x.dp?', '+esc(x.dp):'')+'</td><td>'+(x.nb||'—')+'</td></tr>';});h+='</table><div style="margin-top:16px;border-top:1px solid #ccc;padding-top:7px;font-size:9px;color:#888;text-align:center;">WADAGNI 2026 — Plateforme de Coordination — '+now+'</div>\n</body></html>';var win=window.open('','_blank');if(win){win.document.write(h);win.document.close();win.focus();setTimeout(function(){win.print();},500);}else toast('Autorisez les popups puis réessayez','#E74C3C');}
+function updDL(){var adl=document.getElementById('a-dl');if(adl)adl.innerHTML=DATA.membres.map(function(m){return'<option value="'+esc(m.pn+' '+m.nm)+'">';}).join('');var rdl=document.getElementById('r-dl');if(rdl)rdl.innerHTML=DATA.membres.filter(function(m){return m.niv==='N2';}).map(function(m){return'<option value="'+esc(m.pn+' '+m.nm)+'">';}).join('');var aldl=document.getElementById('al-dl');if(aldl)aldl.innerHTML=DATA.membres.map(function(m){return'<option value="'+esc(m.pn+' '+m.nm)+'">';}).join('');}
+var toastT=null;
+function toast(msg,bg){var el=document.getElementById('toast');el.textContent=msg;el.style.background=bg||'#333';el.className='show';if(toastT)clearTimeout(toastT);toastT=setTimeout(function(){el.className='';},3000);}
+/* ── ADMIN FUNCTIONS ── */
+function logEvent(type,code,niv,name){var log=DB.get('log');if(!Array.isArray(log))log=[];log.unshift({ts:Date.now(),type:type,code:code,niv:niv,name:name});if(log.length>200)log=log.slice(0,200);DB.set('log',log);}
+function rAdmin(){
+  /* état verrou */
+  var locked=DB.get('lock')===true;
+  var ls=document.getElementById('lock-status');if(ls){ls.textContent=locked?'🔒 PLATEFORME VERROUILLÉE':'🟢 PLATEFORME OUVERTE';ls.style.cssText='background:'+(locked?'rgba(231,76,60,.2)':'rgba(30,112,69,.2)')+';color:'+(locked?'#E74C3C':'#2ECC71')+';padding:4px 14px;border-radius:10px;font-weight:700;font-size:11px;';}
+  var bl=document.getElementById('btn-lock');if(bl){bl.textContent=locked?'🔓 Déverrouiller la plateforme':'🔒 Verrouiller la plateforme';bl.style.background=locked?'linear-gradient(135deg,#1A52A0,#0B4EA2)':'linear-gradient(135deg,#C0392B,#922B21)';}
+  /* codes actuels */
+  var cd=DB.get('codes');
+  var c1=document.getElementById('adm-c1');if(c1)c1.placeholder=(cd&&cd.n1)||'N1-COORD (actuel)';
+  var c3=document.getElementById('adm-c3');if(c3)c3.placeholder=(cd&&cd.n3)||'N3-FOCAL (actuel)';
+  /* journal */
+  var log=DB.get('log');if(!Array.isArray(log))log=[];
+  var lc=document.getElementById('log-count');if(lc)lc.textContent=log.length+' entrée'+(log.length>1?'s':'');
+  rBroadcastLists();
+  var ll=document.getElementById('log-list');if(!ll)return;
+  if(!log.length){ll.innerHTML='<div class="empty" style="padding:14px 0"><div class="empty-i">📋</div><div class="empty-t">Aucune connexion enregistrée</div></div>';return;}
+  var cols={N1:'#C9A84C',N3:'#E67E22',ADM:'#E74C3C'};
+  ll.innerHTML=log.map(function(e){var ic=e.type==='login'?'→':'←';var col=cols[e.niv]||'#7A7A7A';return'<div class="log-row"><div style="width:16px;text-align:center;font-size:12px;color:'+(e.type==='login'?'#2ECC71':'#E74C3C')+';">'+ic+'</div><div style="flex:1;"><div style="font-size:11px;font-weight:700;color:'+col+';">'+esc(e.niv)+' — '+esc(e.code)+(e.name?' ('+esc(e.name)+')':'')+'</div><div style="font-size:10px;color:var(--gray);">'+fdt(e.ts)+'</div></div></div>';}).join('');
+}
+function toggleLock(){var locked=DB.get('lock')===true;DB.set('lock',!locked);rAdmin();toast(locked?'🔓 Plateforme déverrouillée':'🔒 Plateforme verrouillée',locked?'#1A52A0':'#C0392B');}
+function saveCodes(){var n1=(document.getElementById('adm-c1').value||'').trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');var n3=(document.getElementById('adm-c3').value||'').trim().toUpperCase().replace(/[^A-Z0-9\-]/g,'');if(!n1&&!n3){toast('Entrez au moins un code','#E74C3C');return;}if(n1==='ADMIN-2026'||n3==='ADMIN-2026'){toast('Ce code est réservé à l\'administrateur','#E74C3C');return;}var old=DB.get('codes')||{};var n1f=n1||old.n1||'N1-COORD',n3f=n3||old.n3||'N3-FOCAL';if(n1f===n3f){toast('Les deux codes doivent être différents','#E74C3C');return;}/* supprimer anciens */if(old.n1&&CODES[old.n1])delete CODES[old.n1];if(old.n3&&CODES[old.n3])delete CODES[old.n3];delete CODES['N1-COORD'];delete CODES['N3-FOCAL'];/* ajouter nouveaux */CODES[n1f]=CODES_DEF['N1-COORD'];CODES[n3f]=CODES_DEF['N3-FOCAL'];DB.set('codes',{n1:n1f,n3:n3f});document.getElementById('adm-c1').value='';document.getElementById('adm-c3').value='';rAdmin();toast('Codes mis à jour ✅ — N1: '+n1f+' · N3: '+n3f,'#1E7045');}
+function resetCodes(){if(!confirm('Remettre les codes par défaut ?\nN1-COORD et N3-FOCAL'))return;var old=DB.get('codes')||{};if(old.n1&&CODES[old.n1]&&old.n1!=='N1-COORD')delete CODES[old.n1];if(old.n3&&CODES[old.n3]&&old.n3!=='N3-FOCAL')delete CODES[old.n3];CODES['N1-COORD']=CODES_DEF['N1-COORD'];CODES['N3-FOCAL']=CODES_DEF['N3-FOCAL'];DB.set('codes',null);rAdmin();toast('Codes remis par défaut','#1A52A0');}
+function clearLog(){if(!confirm('Effacer tout le journal ?'))return;DB.set('log',[]);rAdmin();toast('Journal effacé','#555');}
+function editMem(id){var m=DATA.membres.filter(function(x){return x.id===id;})[0];if(!m)return;openView('v-ma');initMF();sv('m-pn',m.pn);sv('m-nm',m.nm);sv('m-tl',m.tl);sv('m-ob',m.ob);selMN=m.niv;buildNS('m-niv',m.niv,'m',getAccess().nivs);updMFields();if(m.dp){sv('m-dp',m.dp);updCommunes('m-dp','m-cm');if(m.cm)setTimeout(function(){sv('m-cm',m.cm);},50);}if(m.ar)sv('m-ar',m.ar);if(m.vl)sv('m-vl',m.vl);/* afficher code existant */var codeHint=document.getElementById('edit-code-hint');if(!codeHint){var ch=document.createElement('div');ch.id='edit-code-hint';ch.style.cssText='background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.4);border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:12px;color:#D4A017;font-family:monospace;';document.querySelector('#v-ma .card').insertBefore(ch,document.querySelector('#v-ma .btn-gold'));}document.getElementById('edit-code-hint').innerHTML='🔑 Code de connexion actuel : <strong style="font-size:16px;letter-spacing:3px;">'+(m.cd||'non défini')+'</strong><button onclick="if(confirm(\'Régénérer le code de '+(m.pn)+' ?\')){var nc=genCode();DATA.membres.filter(function(x){return x.id==\''+id+'\'})[0].cd=nc;saveM();document.getElementById(\'edit-code-hint\').querySelector(\'strong\').textContent=nc;showCodeModal(\''+m.pn+' '+m.nm+'\',nc)}" style="margin-left:10px;font-size:10px;background:none;border:1px solid #D4A017;color:#D4A017;border-radius:5px;padding:2px 7px;cursor:pointer;">🔄 Régénérer</button>';/* remplacer le bouton Enregistrer pour update */document.querySelector('#v-ma .btn-gold').setAttribute('onclick','updateMem(\''+id+'\')');document.querySelector('#v-ma .pg-title').textContent='Modifier le Membre';}
+function updateMem(id){var pn=v('m-pn').trim(),nm=v('m-nm').trim(),tl=v('m-tl').trim(),dp=v('m-dp'),cm=v('m-cm').trim(),ar=v('m-ar').trim(),vl=v('m-vl').trim();var ok={N1:pn&&nm&&tl,N3:pn&&nm&&tl&&dp&&cm&&ar}[selMN]||(pn&&nm&&tl);if(!ok){toast('Remplissez les champs obligatoires','#E74C3C');return;}var idx=DATA.membres.findIndex(function(x){return x.id===id;});if(idx<0)return;DATA.membres[idx]=Object.assign(DATA.membres[idx],{pn:pn,nm:nm,tl:tl,niv:selMN,dp:dp,cm:cm,ar:ar,vl:vl,ob:v('m-ob').trim()});saveM();/* remettre bouton normal + nettoyer hint code */var ch=document.getElementById('edit-code-hint');if(ch)ch.remove();document.querySelector('#v-ma .btn-gold').setAttribute('onclick','saveMem()');document.querySelector('#v-ma .pg-title').textContent='Nouveau Membre';initMF();openView('v-ml');rMem();renderDash();updDL();toast('Membre mis à jour ✅','#1E7045');}
+
+
+/* ── LISTES DE DIFFUSION WHATSAPP ── */
+function fmtTel(tl){
+  var t=(tl||'').replace(/[^0-9+]/g,'');
+  if(!t)return null;
+  if(t.startsWith('+'))return t;
+  t=t.replace(/^0+/,'');
+  return '+229'+t;
+}
+function rBroadcastLists(){
+  var m=DATA.membres;
+  var n1=m.filter(function(x){return x.niv==='N1'&&x.tl;});
+  var all=m.filter(function(x){return(x.niv==='N1'||x.niv==='N3')&&x.tl;});
+  /* Comptes */
+  var c1=document.getElementById('ldiff-n1-count');
+  if(c1)c1.textContent=n1.length;
+  var ca=document.getElementById('ldiff-all-count');
+  if(ca)ca.textContent=all.length;
+  /* Rendu liste N1 */
+  var l1=document.getElementById('ldiff-n1-list');
+  if(l1){
+    if(!n1.length){l1.innerHTML='<div class="ldiff-empty">Aucun membre N1 avec numéro enregistré</div>';}
+    else{l1.innerHTML=n1.map(function(x){var t=fmtTel(x.tl);return'<div class="ldiff-num-row"><div><div class="ldiff-num">'+esc(t||x.tl)+'</div><div class="ldiff-name">'+esc(x.pn)+' '+esc(x.nm)+(x.cm?' · '+esc(x.cm):'')+'</div></div></div>';}).join('');}
+  }
+  /* Rendu liste ALL */
+  var la=document.getElementById('ldiff-all-list');
+  if(la){
+    if(!all.length){la.innerHTML='<div class="ldiff-empty">Aucun membre enregistré avec numéro</div>';}
+    else{la.innerHTML=all.map(function(x){var t=fmtTel(x.tl);var n=x.niv==='N1'?'⭐':'📍';return'<div class="ldiff-num-row"><div><div class="ldiff-num">'+n+' '+esc(t||x.tl)+'</div><div class="ldiff-name">'+esc(x.pn)+' '+esc(x.nm)+(x.cm?' · '+esc(x.cm):'')+'</div></div></div>';}).join('');}
+  }
+  /* Horodatage */
+  var now=new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  var u1=document.getElementById('ldiff-n1-updated');if(u1)u1.textContent='Mis à jour : '+now;
+  var ua=document.getElementById('ldiff-all-updated');if(ua)ua.textContent='Mis à jour : '+now;
+}
+function copyListNums(dest){
+  var m=DATA.membres;
+  var list=dest==='N1'
+    ?m.filter(function(x){return x.niv==='N1'&&x.tl;})
+    :m.filter(function(x){return(x.niv==='N1'||x.niv==='N3')&&x.tl;});
+  if(!list.length){toast('Aucun numéro disponible','#E74C3C');return;}
+  var nums=list.map(function(x){return fmtTel(x.tl)||x.tl;}).filter(Boolean).join('\n');
+  navigator.clipboard&&navigator.clipboard.writeText(nums)
+    .then(function(){toast(list.length+' numéros copiés ✅ — Collez dans WhatsApp','#25D366');})
+    .catch(function(){fallbackCopy(nums);});
+}
+function openWAList(dest){
+  var m=DATA.membres;
+  var list=dest==='N1'
+    ?m.filter(function(x){return x.niv==='N1'&&x.tl;})
+    :m.filter(function(x){return(x.niv==='N1'||x.niv==='N3')&&x.tl;});
+  if(!list.length){toast('Aucun membre avec numéro','#E74C3C');return;}
+  /* Ouvrir le premier numéro dans WhatsApp — point d'entrée pour créer la liste */
+  var first=fmtTel(list[0].tl)||list[0].tl;
+  var guide=dest==='N1'
+    ?'*WADAGNI 2026 — Liste de diffusion N1*\n'
+     +'Coordination Nationale — '+list.length+' membres\n'
+     +'Créez la liste "WADAGNI N1" avec les numéros copiés.'
+    :'*WADAGNI 2026 — Liste de diffusion générale*\n'
+     +'N1 + N3 — '+list.length+' membres\n'
+     +'Créez la liste "WADAGNI TOUS" avec les numéros copiés.';
+  /* Copier les numéros automatiquement */
+  var nums=list.map(function(x){return fmtTel(x.tl)||x.tl;}).filter(Boolean).join('\n');
+  navigator.clipboard&&navigator.clipboard.writeText(nums).catch(function(){});
+  toast('Numéros copiés — Créez la liste dans WhatsApp','#25D366');
+  var url='https://wa.me/'+first.replace(/[^0-9]/g,'')+'?text='+encodeURIComponent(guide);
+  window.open(url,'_blank');
+}
+var admDest='N1';
+function admPickDest(d){admDest=d;['N1','ALL'].forEach(function(k){var el=document.getElementById('adm-dest-'+k);if(!el)return;var a=k===d;el.style.borderColor=a?(k==='N1'?'#C9A84C':'#0B4EA2'):(k==='N1'?'rgba(201,168,76,.25)':'rgba(11,78,162,.25)');el.style.background=a?(k==='N1'?'rgba(201,168,76,.15)':'rgba(11,78,162,.18)'):'transparent';el.querySelector('div:last-child').style.color=a?(k==='N1'?'#C9A84C':'#5B9BF0'):'#7A7A7A';el.querySelector('div:last-child').style.fontWeight=a?'700':'400';});}
+function admBroadcast(){
+  var msg=(document.getElementById('adm-msg').value||'').trim();
+  if(!msg){toast('Rédigez le message','#E74C3C');return;}
+  var niv=(document.getElementById('adm-urg').value)||'inf';
+  var al={id:uid(),ts:Date.now(),niv:niv,msg:msg,par:'Administrateur — WADAGNI 2026',dp:'',cm:'',saisiPar:'ADM',dest:admDest};
+  DATA.alertes.push(al);saveAL();
+  document.getElementById('adm-msg').value='';
+  renderAll();
+  /* ouvrir modale WhatsApp */
+  openWAModal(msg, niv, admDest);
+}
+var _waMsg='', _waNums=[];
+function openWAModal(msg, niv, dest){
+  var urgLabels={urg:'🚨 URGENT',imp:'⚠️ IMPORTANT',inf:'ℹ️ INFORMATION'};
+  var destLbl=dest==='N1'?'Coordination Nationale (N1)':'Tous les membres (N1 + N3)';
+  /* Construire le message WhatsApp formaté */
+  var formatted='*WADAGNI 2026 — PLATEFORME DE COORDINATION*\n'
+    +'━━━━━━━━━━━━━━━━━━━━\n'
+    +(urgLabels[niv]||'📢 MESSAGE')+'\n'
+    +'━━━━━━━━━━━━━━━━━━━━\n\n'
+    +msg+'\n\n'
+    +'_Diffusé le '+new Date().toLocaleString('fr-FR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'_\n'
+    +'_Destinataires : '+destLbl+'_';
+  _waMsg = formatted;
+  /* Récupérer les numéros selon destinataire */
+  var members = DATA.membres.filter(function(m){
+    if(dest==='N1') return m.niv==='N1'&&m.tl;
+    return (m.niv==='N1'||m.niv==='N3')&&m.tl;
+  });
+  _waNums = members;
+  /* Remplir la modale */
+  document.getElementById('wa-msg-preview').textContent = formatted;
+  document.getElementById('wa-sub').textContent = 'Message à envoyer à '+members.length+' membre'+(members.length>1?'s':'')+' ('+destLbl+')';
+  document.getElementById('wa-nums-lbl').textContent = 'Numéros destinataires ('+members.length+')';
+  var numsHtml = members.length ? members.map(function(m){
+    return '<div class="wa-num-row">'
+      +'<div><div class="wa-num">'+esc(m.tl)+'</div><div class="wa-num-name">'+esc(m.pn)+' '+esc(m.nm)+(m.cm?' · '+esc(m.cm):'')+'</div></div>'
+      +'<button class="btn-wa-ind" onclick="openWADirect('+JSON.stringify(m.tl)+','+JSON.stringify(formatted)+')">📲</button>'
+      +'</div>';
+  }).join('') : '<div style="font-size:11px;color:var(--gray);padding:8px 0;">Aucun membre enregistré avec numéro</div>';
+  document.getElementById('wa-nums-list').innerHTML = numsHtml;
+  document.getElementById('wa-overlay').style.display='flex';
+}
+function closeWA(){document.getElementById('wa-overlay').style.display='none';}
+function copyMsg(){
+  navigator.clipboard&&navigator.clipboard.writeText(_waMsg).then(function(){toast('Message copié ✅','#25D366');}).catch(function(){fallbackCopy(_waMsg);});
+}
+function copyNums(){
+  var nums=_waNums.map(function(m){return m.tl;}).join('\n');
+  if(!nums){toast('Aucun numéro disponible','#E74C3C');return;}
+  navigator.clipboard&&navigator.clipboard.writeText(nums).then(function(){toast(_waNums.length+' numéros copiés ✅','#25D366');}).catch(function(){fallbackCopy(nums);});
+}
+function fallbackCopy(text){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copié ✅','#25D366');}catch(e){toast('Copiez manuellement','#E74C3C');}document.body.removeChild(ta);}
+function openWABroadcast(){
+  var url='https://wa.me/?text='+encodeURIComponent(_waMsg);
+  window.open(url,'_blank');
+}
+function openWADirect(tel, msg){
+  var clean=tel.replace(/[^0-9+]/g,'');
+  if(!clean.startsWith('+'))clean='+229'+clean.replace(/^0+/,'');
+  var url='https://wa.me/'+clean+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+}
+
+window.onload=function(){
+  try{loadCodes();}catch(e){}
+  try{var dt=document.getElementById('a-dt');if(dt)dt.value=new Date().toISOString().slice(0,10);}catch(e){}
+  try{buildNS('m-niv','N3','m');}catch(e){}
+  try{buildNS('a-niv','N3','a');}catch(e){}
+  try{updMFields();}catch(e){}
+  /* Restaurer session */
+  var ses=DB.get('ses');
+  if(ses&&ses.niv){
+    try{
+      SES=ses;
+      document.getElementById('login-wrap').style.display='none';
+      document.getElementById('app-wrap').style.display='flex';
+      enter();
+      return;
+    }catch(e){DB.del('ses');}
+  }
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('app-wrap').style.display='none';
+};
+</script>
+
+<div id="wa-overlay" class="wa-overlay" style="display:none;" onclick="if(event.target===this)closeWA()">
+  <div class="wa-sheet">
+    <div class="wa-title">📲 Diffusion WhatsApp</div>
+    <div class="wa-sub" id="wa-sub">Message prêt à envoyer via WhatsApp</div>
+    <div class="wa-msg-box" id="wa-msg-preview"></div>
+    <button class="btn-copy-num" onclick="copyMsg()">📋 Copier le message</button>
+    <div style="font-size:11px;color:var(--gray);margin-bottom:6px;" id="wa-nums-lbl">Numéros destinataires (0)</div>
+    <div class="wa-nums" id="wa-nums-list"></div>
+    <button class="btn-copy-num" style="margin-top:4px;" onclick="copyNums()">📋 Copier tous les numéros</button>
+    <button class="btn-wa" onclick="openWABroadcast()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Ouvrir WhatsApp avec le message
+    </button>
+    <div style="font-size:10px;color:var(--gray);text-align:center;margin-top:10px;line-height:1.7;">Conseil : créez une liste de diffusion WhatsApp<br>avec les numéros ci-dessus pour envoyer en masse</div>
+    <button class="btn-ghost" style="width:100%;margin-top:10px;" onclick="closeWA()">✕ Fermer</button>
+  </div>
+</div>
+
+</body>
+</html>
